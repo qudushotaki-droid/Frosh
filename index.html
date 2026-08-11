@@ -764,6 +764,12 @@ async function loadData(){
     staff = staff.length?staff:seedStaff();
   }
   migrateStaffPermissions();
+  const savedSessionId = sessionStorage.getItem('asanfrosh-session');
+  if(savedSessionId){
+    const match = staff.find(s=>s.id===savedSessionId);
+    if(match) currentUser = match;
+    else sessionStorage.removeItem('asanfrosh-session');
+  }
   render();
 }
 
@@ -872,6 +878,7 @@ function pressDigit(d){
       currentUser = pendingStaff; loginStage='pick'; pendingStaff=null; pinBuffer=''; loginError='';
       authLog.push({id:uid(), staffId:currentUser.id, staffName:currentUser.name, type:'login', timestamp:new Date().toISOString()});
       saveAuthLog();
+      sessionStorage.setItem('asanfrosh-session', currentUser.id);
       render();
     } else {
       loginError = 'Incorrect PIN';
@@ -886,6 +893,7 @@ function logout(){
     authLog.push({id:uid(), staffId:currentUser.id, staffName:currentUser.name, type:'logout', timestamp:new Date().toISOString()});
     saveAuthLog();
   }
+  sessionStorage.removeItem('asanfrosh-session');
   currentUser=null; cart=[]; currentView='sell'; render();
 }
 
