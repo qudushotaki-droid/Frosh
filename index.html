@@ -401,11 +401,13 @@ const T = {
     godaam_auto_sync:'auto-synced from Godaam',
     loan_type_label:'Type', loan_type_borrower:'They owe me', loan_type_giver:'I owe them',
     loan_total_owed_by_shop:'You Owe (Givers)', top_loan_givers:'Top Loan Givers', no_loan_givers_yet:'No loan givers yet.',
+    loan_borrowers_title:'Borrowers', loan_givers_title:'Loan Givers',
     godaam_qty_label:'{bags} bags + {dzn} dzn ({total} dzn total)', godaam_qty_label_simple:'{bags} bags ({total} dzn total)',
     godaam_extra_dozens:'Extra Loose Dozens', godaam_restock_note:'Restocked {n} dzn to {product}',
     restock_from_godaam_note:'This item is stocked in the warehouse — pull from there to restock.',
     restock_available:'available', restock_bags_to_pull:'Bags to Pull', restock_extra_dozens:'+ Extra Dozens',
     restock_will_add:'Will add {n} to inventory stock',
+    toast_session_expired:'Your session timed out — please log in again',
     confirm_delete_godaam:'Delete this warehouse item and its history? This cannot be undone.',
     godaam_search_placeholder:'Search warehouse items…', deletion_history:'Deletion History',
     no_delete_history:'Nothing has been deleted yet.', delete_confirm_title:'Delete this?',
@@ -480,6 +482,9 @@ const T = {
     loan_original:'پور شوی مقدار', loan_paid:'تادیه شوی', loan_remaining:'پاتې',
     loan_status_outstanding:'ناتادیه شوی', loan_status_partial:'نیمګړی', loan_status_paid:'بشپړ تادیه شوی',
     loan_total_owed:'ټول پور چې تاسو ته ورکول کیږي', loan_people_count:'پور لرونکي کسان',
+    loan_type_label:'ډول', loan_type_borrower:'زما پور لري', loan_type_giver:'زه يې پور لرم',
+    loan_total_owed_by_shop:'هغه پور چې تاسو یې ورکوئ', top_loan_givers:'مهم پور ورکوونکي', no_loan_givers_yet:'تر اوسه هیڅ پور ورکوونکی نشته.',
+    loan_borrowers_title:'پور اخیستونکي', loan_givers_title:'پور ورکوونکي',
     no_loans_yet:'تر اوسه هیڅ پور نه دی ثبت شوی.', no_payments_yet:'تر اوسه هیڅ تادیه نه ده ثبت شوې.',
     loan_note:'یادداشت (اختیاري)', loan_note_placeholder:'د پور دلیل، یا کوم یادداشت',
     loan_payment_history:'د تادیاتو تاریخچه', loan_add_payment:'تادیه اضافه کړئ',
@@ -560,7 +565,7 @@ const T = {
     admin_only:'یوازې مدیر کولی شي دا کار وکړي.', admin_access:'د مدیر لاسرسی', not_admin_notice:'د زیرمې یا کارکوونکو بدلونونو لپاره له مدیر وغواړئ.'
   },
   prs: {
-    sell:'فروش', inventory:'انبار', reports:'راپورها', settings:'تنظیمات',
+    sell:'فروش', inventory:'موجودی', reports:'راپورها', settings:'تنظیمات',
     sub_sell:'اجناس را حساب کنید و پرداخت بگیرید', sub_inventory:'مدیریت محصولات، قیمت تمام‌شد، و موجودی',
     sub_reports:'فروش، سود، و عملکرد', sub_settings:'حساب‌های کارمندان و تنظیمات فروشگاه',
     sub_loans:'ببینید چه کسی به شما مقروض است و پرداخت‌ها را ثبت کنید',
@@ -568,6 +573,9 @@ const T = {
     loan_original:'مبلغ قرضه', loan_paid:'پرداخت شده', loan_remaining:'باقی‌مانده',
     loan_status_outstanding:'پرداخت‌نشده', loan_status_partial:'جزئی', loan_status_paid:'تصفیه‌شده',
     loan_total_owed:'مجموع طلب شما', loan_people_count:'افراد دارای قرضه',
+    loan_type_label:'نوعیت', loan_type_borrower:'از من قرضه دارد', loan_type_giver:'به او قرضه دارم',
+    loan_total_owed_by_shop:'قرضه‌ای که شما می‌دهید', top_loan_givers:'قرضه‌دهندگان برتر', no_loan_givers_yet:'هنوز قرضه‌دهنده‌ای ثبت نشده.',
+    loan_borrowers_title:'قرضه‌گیرندگان', loan_givers_title:'قرضه‌دهندگان',
     no_loans_yet:'هنوز قرضه‌ای ثبت نشده.', no_payments_yet:'هنوز پرداختی ثبت نشده.',
     loan_note:'یادداشت (اختیاری)', loan_note_placeholder:'دلیل قرضه، یا هر یادداشتی',
     loan_payment_history:'تاریخچه پرداخت‌ها', loan_add_payment:'افزودن پرداخت',
@@ -786,13 +794,45 @@ async function loadData(){
     staff = staff.length?staff:seedStaff();
   }
   migrateStaffPermissions();
-  const savedSessionId = sessionStorage.getItem('asanfrosh-session');
-  if(savedSessionId){
-    const match = staff.find(s=>s.id===savedSessionId);
-    if(match) currentUser = match;
+  const saved = readSession();
+  if(saved){
+    const match = staff.find(s=>s.id===saved.id);
+    if(match && saved.expiresAt > Date.now()) currentUser = match;
     else sessionStorage.removeItem('asanfrosh-session');
   }
+  startSessionWatch();
   render();
+}
+
+// ---------------- SESSION TIMEOUT ----------------
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // auto-logout after 30 min of inactivity
+function readSession(){
+  try{
+    const raw = sessionStorage.getItem('asanfrosh-session');
+    if(!raw) return null;
+    return JSON.parse(raw);
+  }catch(e){ return null; }
+}
+function writeSession(id){
+  sessionStorage.setItem('asanfrosh-session', JSON.stringify({id, expiresAt: Date.now() + SESSION_TIMEOUT_MS}));
+}
+function refreshSession(){
+  if(!currentUser) return;
+  const saved = readSession();
+  if(saved && saved.id===currentUser.id) writeSession(currentUser.id);
+}
+function startSessionWatch(){
+  ['click','keydown','touchstart'].forEach(evt=>{
+    document.addEventListener(evt, refreshSession, {passive:true});
+  });
+  setInterval(()=>{
+    if(!currentUser) return;
+    const saved = readSession();
+    if(!saved || saved.expiresAt <= Date.now()){
+      showToast(t('toast_session_expired'));
+      logout();
+    }
+  }, 30000);
 }
 
 async function saveProducts(){
@@ -905,7 +945,7 @@ function pressDigit(d){
       currentUser = pendingStaff; loginStage='pick'; pendingStaff=null; pinBuffer=''; loginError='';
       authLog.push({id:uid(), staffId:currentUser.id, staffName:currentUser.name, type:'login', timestamp:new Date().toISOString()});
       saveAuthLog();
-      sessionStorage.setItem('asanfrosh-session', currentUser.id);
+      writeSession(currentUser.id);
       render();
     } else {
       loginError = 'Incorrect PIN';
@@ -2138,9 +2178,10 @@ function renderSettings(){
   </div>`;
 }
 
-function buildLoanCells(){
+function buildLoanCells(type){
   const q = (loanSearch||'').trim().toLowerCase();
   const filtered = loans.filter(l=>{
+    if((l.type||'borrower')!==type) return false;
     if(!q) return true;
     const code = formatLoanCode(l.loanSeq||0).toLowerCase();
     return (l.customerName||'').toLowerCase().includes(q) || code.includes(q);
@@ -2161,7 +2202,7 @@ function buildLoanCells(){
     });
   }
   if(!sorted.length){
-    return `<div class="ig-empty">${t(q?'no_products_match':'no_loans_yet')}</div>`;
+    return `<div class="ig-empty">${t(q?'no_products_match': (type==='giver'?'no_loan_givers_yet':'no_loans_yet'))}</div>`;
   }
   return sorted.map(l=>{
     const paid = loanPaidTotal(l);
@@ -2173,7 +2214,7 @@ function buildLoanCells(){
     const lastAmtLabel = lastPay ? money(lastPay.amount) : '—';
     return `
       <div class="ig-cell mono">${formatLoanCode(l.loanSeq||0)}</div>
-      <div class="ig-cell">${escapeHtml(l.customerName)} ${l.type==='giver'?`<span class="stockpill low">${t('loan_type_giver')}</span>`:''}</div>
+      <div class="ig-cell">${escapeHtml(l.customerName)}</div>
       <div class="ig-cell mono">${money(loanChargedTotal(l))}</div>
       <div class="ig-cell mono">${money(paid)}</div>
       <div class="ig-cell mono">${money(remaining)}</div>
@@ -2184,24 +2225,37 @@ function buildLoanCells(){
   }).join('');
 }
 function updateLoanTable(){
-  const body = document.getElementById('loanGridBody');
-  if(!body) return;
-  body.innerHTML = buildLoanCells();
-  document.querySelectorAll('#loanGridBody [data-loandetail]').forEach(b=>b.addEventListener('click',()=>openLoanDetailModal(b.dataset.loandetail)));
+  const bBody = document.getElementById('loanGridBodyBorrower');
+  const gBody = document.getElementById('loanGridBodyGiver');
+  if(bBody) bBody.innerHTML = buildLoanCells('borrower');
+  if(gBody) gBody.innerHTML = buildLoanCells('giver');
+  document.querySelectorAll('#loanGridBodyBorrower [data-loandetail], #loanGridBodyGiver [data-loandetail]').forEach(b=>b.addEventListener('click',()=>openLoanDetailModal(b.dataset.loandetail)));
 }
 function renderLoans(){
-  const cells = buildLoanCells();
+  const borrowerCells = buildLoanCells('borrower');
+  const giverCells = buildLoanCells('giver');
   const borrowerLoans = loans.filter(l=>(l.type||'borrower')==='borrower');
   const giverLoans = loans.filter(l=>l.type==='giver');
   const totalOwed = borrowerLoans.reduce((a,l)=>a+loanRemaining(l),0);
   const totalOwedByShop = giverLoans.reduce((a,l)=>a+loanRemaining(l),0);
   const totalPeople = new Set(borrowerLoans.filter(l=>loanRemaining(l)>0).map(l=>l.customerName)).size;
+  const totalGiverPeople = new Set(giverLoans.filter(l=>loanRemaining(l)>0).map(l=>l.customerName)).size;
+
+  const headRow = `
+    <div class="ig-head">${t('loan_id')}</div><div class="ig-head">${t('customer_name')}</div>
+    <div class="ig-head">${t('loan_original')}</div><div class="ig-head">${t('loan_paid')}</div>
+    <div class="ig-head">${t('loan_remaining')}</div><div class="ig-head">${t('event_col')}</div>
+    <div class="ig-head">${t('last_payment')}</div><div class="ig-head">${t('last_payment_amount')}</div>
+    <div class="ig-head"></div>`;
 
   return `
   <div class="stat-row">
     <div class="stat"><div class="label">${t('loan_total_owed')}</div><div class="value" style="color:var(--danger);">${money(totalOwed)}</div></div>
     <div class="stat"><div class="label">${t('loan_people_count')}</div><div class="value">${totalPeople}</div></div>
+  </div>
+  <div class="stat-row">
     <div class="stat"><div class="label">${t('loan_total_owed_by_shop')}</div><div class="value" style="color:var(--amber);">${money(totalOwedByShop)}</div></div>
+    <div class="stat"><div class="label">${t('loan_givers_title')}</div><div class="value">${totalGiverPeople}</div></div>
   </div>
   <div class="inv-toolbar">
     <input type="text" id="loanSearchInput" placeholder="${t('loan_search_placeholder')}" value="${escapeAttr(loanSearch||'')}">
@@ -2210,16 +2264,23 @@ function renderLoans(){
     <button class="cancel" id="printLoanListBtn">${t('print')}</button>
     <button class="cancel" id="downloadLoanListBtn">${t('download')}</button>
   </div>
+
+  <h4 class="loan-subhead">${t('loan_borrowers_title')}</h4>
   <div class="table-scroll-x">
   <div class="ig-grid loan-grid" dir="ltr">
-    <div class="ig-head">${t('loan_id')}</div><div class="ig-head">${t('customer_name')}</div>
-    <div class="ig-head">${t('loan_original')}</div><div class="ig-head">${t('loan_paid')}</div>
-    <div class="ig-head">${t('loan_remaining')}</div><div class="ig-head">${t('event_col')}</div>
-    <div class="ig-head">${t('last_payment')}</div><div class="ig-head">${t('last_payment_amount')}</div>
-    <div class="ig-head"></div>
-    <div id="loanGridBody" style="display:contents">${cells}</div>
+    ${headRow}
+    <div id="loanGridBodyBorrower" style="display:contents">${borrowerCells}</div>
   </div>
   </div>
+
+  <h4 class="loan-subhead">${t('loan_givers_title')}</h4>
+  <div class="table-scroll-x">
+  <div class="ig-grid loan-grid" dir="ltr">
+    ${headRow}
+    <div id="loanGridBodyGiver" style="display:contents">${giverCells}</div>
+  </div>
+  </div>
+
   ${renderTopLoaners()}
   ${renderTopLoanGivers()}
   ${renderRecentLoanPayments()}
