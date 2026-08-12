@@ -401,6 +401,11 @@ const T = {
     godaam_auto_sync:'auto-synced from Godaam',
     loan_type_label:'Type', loan_type_borrower:'They owe me', loan_type_giver:'I owe them',
     loan_total_owed_by_shop:'You Owe (Givers)', top_loan_givers:'Top Loan Givers', no_loan_givers_yet:'No loan givers yet.',
+    godaam_qty_label:'{bags} bags + {dzn} dzn ({total} dzn total)', godaam_qty_label_simple:'{bags} bags ({total} dzn total)',
+    godaam_extra_dozens:'Extra Loose Dozens', godaam_restock_note:'Restocked {n} dzn to {product}',
+    restock_from_godaam_note:'This item is stocked in the warehouse — pull from there to restock.',
+    restock_available:'available', restock_bags_to_pull:'Bags to Pull', restock_extra_dozens:'+ Extra Dozens',
+    restock_will_add:'Will add {n} to inventory stock',
     confirm_delete_godaam:'Delete this warehouse item and its history? This cannot be undone.',
     godaam_search_placeholder:'Search warehouse items…', deletion_history:'Deletion History',
     no_delete_history:'Nothing has been deleted yet.', delete_confirm_title:'Delete this?',
@@ -770,7 +775,7 @@ async function loadData(){
     }));
 
     godaamItems = (godRows||[]).map(g=>({
-      id:g.id, name:g.name, bagsCount:Number(g.bags_count), dozensPerBag:Number(g.dozens_per_bag), costPerDozen:Number(g.cost_per_dozen),
+      id:g.id, name:g.name, bagsCount:Number(g.bags_count), dozensPerBag:Number(g.dozens_per_bag), costPerDozen:Number(g.cost_per_dozen), extraDozens:Number(g.extra_dozens||0),
       createdAt:g.created_at, staffId:g.staff_id, staffName:g.staff_name,
       history:(godHistRows||[]).filter(h=>h.godaam_id===g.id).map(h=>({id:h.id, date:h.date, type:h.type, bags:Number(h.bags), note:h.note, staffName:h.staff_name}))
     }));
@@ -853,7 +858,7 @@ async function saveLoanDeleteLog(){
 }
 async function saveGodaam(){
   try{
-    const rows = godaamItems.map(g=>({id:g.id, name:g.name, bags_count:g.bagsCount, dozens_per_bag:g.dozensPerBag, cost_per_dozen:g.costPerDozen, created_at:g.createdAt, staff_id:g.staffId, staff_name:g.staffName}));
+    const rows = godaamItems.map(g=>({id:g.id, name:g.name, bags_count:g.bagsCount, dozens_per_bag:g.dozensPerBag, cost_per_dozen:g.costPerDozen, extra_dozens:g.extraDozens||0, created_at:g.createdAt, staff_id:g.staffId, staff_name:g.staffName}));
     if(rows.length) await sb.from('godaam_items').upsert(rows);
     const ids = godaamItems.map(g=>g.id);
     const {data:existing} = await sb.from('godaam_items').select('id');
@@ -1227,15 +1232,52 @@ async function deleteProduct(id){
 // ---------------- RESTOCK LOGIC ----------------
 function openRestockModal(id){
   const p = products.find(x=>x.id===id);
-  modalState = {mode:'restock', productId:id, draft:{qty:''}};
+  const linkedItem = findGodaamItemForProduct(p);
+  if(linkedItem && (linkedItem.bagsCount>0 || linkedItem.extraDozens>0)){
+    modalState = {mode:'restock', productId:id, draft:{linked:true, godaamId:linkedItem.id, bags:'', extraDozens:''}};
+  } else {
+    modalState = {mode:'restock', productId:id, draft:{linked:false, qty:''}};
+  }
   render();
 }
 async function saveRestockModal(){
   if(isSubmitting) return; isSubmitting = true;
   try{
   const p = products.find(x=>x.id===modalState.productId);
-  const qty = parseInt(modalState.draft.qty);
-  if(!p || isNaN(qty) || qty<=0){ showToast(t('restock_qty_invalid')); return; }
+  const d = modalState.draft;
+  if(!p) return;
+
+  if(d.linked){
+    const item = godaamItems.find(g=>g.id===d.godaamId);
+    if(!item){ showToast(t('restock_qty_invalid')); return; }
+    const bagsUsed = parseInt(d.bags)||0;
+    const extraUsed = parseInt(d.extraDozens)||0;
+    if(bagsUsed<=0 && extraUsed<=0){ showToast(t('restock_qty_invalid')); return; }
+    if(bagsUsed>item.bagsCount || extraUsed>(item.extraDozens||0)){ showToast(t('toast_godaam_remove_too_much')); return; }
+    const dozensAdded = bagsUsed*item.dozensPerBag + extraUsed;
+    const stockBefore = p.stock;
+    p.stock += dozensAdded;
+    item.bagsCount -= bagsUsed;
+    item.extraDozens = (item.extraDozens||0) - extraUsed;
+    item.history = item.history || [];
+    item.history.push({
+      id:uid(), date:new Date().toISOString(), type:'remove', bags:bagsUsed,
+      note:t('godaam_restock_note',{n:dozensAdded, product:p.name})+(extraUsed>0?` (+${extraUsed} dzn)`:''),
+      staffName:currentUser.name
+    });
+    restockLog.push({
+      id:uid(), productId:p.id, productName:p.name, qtyAdded:dozensAdded,
+      stockBefore, stockAfter:p.stock,
+      staffId:currentUser.id, staffName:currentUser.name, timestamp:new Date().toISOString()
+    });
+    await saveProducts(); await saveGodaam(); await saveRestockLog();
+    showToast(t('toast_restock_done',{name:p.name, n:dozensAdded}));
+    modalState = null; render();
+    return;
+  }
+
+  const qty = parseInt(d.qty);
+  if(isNaN(qty) || qty<=0){ showToast(t('restock_qty_invalid')); return; }
   const stockBefore = p.stock;
   p.stock += qty;
   restockLog.push({
@@ -1441,9 +1483,20 @@ function addLoanCharge(customerName, amount, note, saleId, type){
 }
 
 // ---------------- GODAAM (WAREHOUSE) ----------------
-function godaamTotalDozens(item){ return (item.bagsCount||0) * (item.dozensPerBag||0); }
+function godaamTotalDozens(item){ return (item.bagsCount||0) * (item.dozensPerBag||0) + (item.extraDozens||0); }
 function godaamTotalValue(item){ return godaamTotalDozens(item) * (item.costPerDozen||0); }
 function godaamAllTotalValue(){ return godaamItems.reduce((a,it)=>a+godaamTotalValue(it),0); }
+function godaamQtyLabel(item){
+  const extra = item.extraDozens||0;
+  return extra>0
+    ? t('godaam_qty_label',{bags:item.bagsCount||0, dzn:extra, total:godaamTotalDozens(item)})
+    : t('godaam_qty_label_simple',{bags:item.bagsCount||0, total:godaamTotalDozens(item)});
+}
+function findGodaamItemForProduct(product){
+  if(!product) return null;
+  const q = product.name.trim().toLowerCase();
+  return godaamItems.find(g=>g.name.trim().toLowerCase()===q) || null;
+}
 function openAddGodaamModal(){
   modalState = {mode:'addGodaam', draft:{name:'', bagsCount:'', dozensPerBag:'', costPerDozen:''}};
   render();
@@ -1465,7 +1518,7 @@ async function saveAddGodaamModal(){
     showToast(t('toast_godaam_invalid')); return;
   }
   const item = {
-    id:uid(), name, bagsCount:bags, dozensPerBag, costPerDozen:cost,
+    id:uid(), name, bagsCount:bags, dozensPerBag, costPerDozen:cost, extraDozens:0,
     createdAt:new Date().toISOString(), staffId:currentUser.id, staffName:currentUser.name,
     history: bags>0 ? [{id:uid(), date:new Date().toISOString(), type:'add', bags, note:t('godaam_initial_stock'), staffName:currentUser.name}] : []
   };
@@ -1850,7 +1903,7 @@ function buildGodaamCells(){
   }
   return list.map(it=>`
       <div class="ig-cell">${escapeHtml(it.name)}</div>
-      <div class="ig-cell mono">${it.bagsCount}</div>
+      <div class="ig-cell mono">${it.bagsCount}${it.extraDozens>0?` + ${it.extraDozens}dz`:''}</div>
       <div class="ig-cell mono">${it.dozensPerBag}</div>
       <div class="ig-cell mono">${godaamTotalDozens(it)}</div>
       <div class="ig-cell mono">${money(it.costPerDozen)}</div>
@@ -1871,10 +1924,10 @@ function renderGodaam(){
   <div class="stat-row">
     <div class="stat"><div class="label">${t('godaam_total_value')}</div><div class="value">${money(godaamAllTotalValue())}</div></div>
     <div class="stat"><div class="label">${t('godaam_item_count')}</div><div class="value">${godaamItems.length}</div></div>
-    <div class="stat"><div class="label">${t('godaam_total_bags')}</div><div class="value">${totalBags}</div></div>
   </div>
   <div class="stat-row">
-    <div class="stat" style="grid-column:1/-1;"><div class="label">${t('inventory_total_value')}</div><div class="value">${money(inventoryTotalValue())}</div></div>
+    <div class="stat"><div class="label">${t('inventory_total_value')}</div><div class="value">${money(inventoryTotalValue())}</div></div>
+    <div class="stat"><div class="label">${t('godaam_total_bags')}</div><div class="value">${totalBags}</div></div>
   </div>
   <div class="inv-toolbar">
     <input type="text" id="godaamSearchInput" placeholder="${t('godaam_search_placeholder')}" value="${escapeAttr(godaamSearch||'')}">
@@ -2712,6 +2765,33 @@ function renderModal(){
   }
   if(modalState.mode==='restock'){
     const p = products.find(x=>x.id===modalState.productId);
+    if(d.linked){
+      const item = godaamItems.find(g=>g.id===d.godaamId);
+      const bagsUsed = parseInt(d.bags)||0;
+      const extraUsed = parseInt(d.extraDozens)||0;
+      const preview = item ? (bagsUsed*item.dozensPerBag + extraUsed) : 0;
+      return `
+      <div class="modal-bg" id="modalBg">
+        <div class="modal">
+          <h3>${t('restock_title')}${p?': '+escapeHtml(p.name):''}</h3>
+          <div class="empty-note" style="margin-bottom:10px;">${t('restock_from_godaam_note')}</div>
+          <div class="field"><label>${t('stock')}</label><input type="text" value="${p?p.stock:0}" disabled style="background:var(--paper-2);"></div>
+          <div class="loan-summary" style="margin-bottom:10px;">
+            <div><span>${t('godaam_bags_count')} ${t('restock_available')}</span><span class="mono">${item?item.bagsCount:0}</span></div>
+            ${item&&item.extraDozens>0?`<div><span>${t('godaam_extra_dozens')} ${t('restock_available')}</span><span class="mono">${item.extraDozens}</span></div>`:''}
+          </div>
+          <div class="field-row">
+            <div class="field"><label>${t('restock_bags_to_pull')}</label><input type="number" id="r-bags" min="0" max="${item?item.bagsCount:0}" step="1" value="${escapeAttr(d.bags)}" placeholder="0" autofocus></div>
+            <div class="field"><label>${t('restock_extra_dozens')}</label><input type="number" id="r-extra" min="0" max="${item?item.extraDozens||0:0}" step="1" value="${escapeAttr(d.extraDozens)}" placeholder="0"></div>
+          </div>
+          <div class="empty-note" id="r-preview">${t('restock_will_add',{n:preview})}</div>
+          <div class="modal-actions">
+            <button class="cancel" id="modalCancel">${t('cancel')}</button>
+            <button class="save" id="modalSaveRestock">${t('restock')}</button>
+          </div>
+        </div>
+      </div>`;
+    }
     return `
     <div class="modal-bg" id="modalBg">
       <div class="modal">
@@ -2832,6 +2912,7 @@ function renderModal(){
         <h3>${escapeHtml(item.name)}</h3>
         <div class="loan-summary">
           <div><span>${t('godaam_bags_count')}</span><span class="mono">${item.bagsCount}</span></div>
+          ${item.extraDozens>0?`<div><span>${t('godaam_extra_dozens')}</span><span class="mono">${item.extraDozens}</span></div>`:''}
           <div><span>${t('godaam_dozens_per_bag')}</span><span class="mono">${item.dozensPerBag}</span></div>
           <div><span>${t('godaam_total_dozens')}</span><span class="mono">${godaamTotalDozens(item)}</span></div>
           <div><span>${t('godaam_cost')}</span><span class="mono">${money(item.costPerDozen)}</span></div>
@@ -3108,8 +3189,23 @@ function render(){
       document.getElementById('modalCancel').addEventListener('click', closeModal);
       document.getElementById('modalSave').addEventListener('click', saveModal);
     } else if(modalState.mode==='restock'){
-      const qtyInput = document.getElementById('r-qty');
-      if(qtyInput){ qtyInput.addEventListener('input', e=>{ modalState.draft.qty = e.target.value; }); qtyInput.focus(); }
+      if(modalState.draft.linked){
+        const bagsInput = document.getElementById('r-bags');
+        const extraInput = document.getElementById('r-extra');
+        const updatePreview = ()=>{
+          const item = godaamItems.find(g=>g.id===modalState.draft.godaamId);
+          const bagsUsed = parseInt(modalState.draft.bags)||0;
+          const extraUsed = parseInt(modalState.draft.extraDozens)||0;
+          const preview = item ? (bagsUsed*item.dozensPerBag + extraUsed) : 0;
+          const el = document.getElementById('r-preview');
+          if(el) el.textContent = t('restock_will_add',{n:preview});
+        };
+        if(bagsInput){ bagsInput.addEventListener('input', e=>{ modalState.draft.bags = e.target.value; updatePreview(); }); bagsInput.focus(); }
+        if(extraInput){ extraInput.addEventListener('input', e=>{ modalState.draft.extraDozens = e.target.value; updatePreview(); }); }
+      } else {
+        const qtyInput = document.getElementById('r-qty');
+        if(qtyInput){ qtyInput.addEventListener('input', e=>{ modalState.draft.qty = e.target.value; }); qtyInput.focus(); }
+      }
       document.getElementById('modalCancel').addEventListener('click', closeModal);
       document.getElementById('modalSaveRestock').addEventListener('click', saveRestockModal);
     } else if(modalState.mode==='addLoan'){
