@@ -184,6 +184,15 @@
   .ig-grid.loan-grid{
     grid-template-columns: 90px 150px 100px 90px 100px 100px 130px 110px 130px;
   }
+  .ig-grid.period-grid{
+    grid-template-columns: 1fr 110px 130px 130px;
+  }
+  .ig-grid.sales-grid{
+    grid-template-columns: 130px 1fr 140px 120px 100px 100px 70px;
+  }
+  .ig-grid.restock-grid{
+    grid-template-columns: 130px 1fr 90px 140px;
+  }
   .ig-head{
     font-size:10.5px; text-transform:uppercase; letter-spacing:0.08em; color:var(--slate);
     padding:10px 14px; border-bottom:1px solid var(--line); font-family:'JetBrains Mono',monospace;
@@ -2029,34 +2038,31 @@ function renderReports(){
     <div class="bar-row"><div class="bname">${escapeHtml(c.name)}</div><div class="bar-track"><div class="bar-fill customer-fill" style="width:${Math.max(0,(c.revenue/maxCustomer*100)).toFixed(0)}%"></div></div><div class="bar-val">${money(c.revenue)}<span class="cust-profit">${money(c.profit)} ${t('customer_profit_suffix')}</span></div></div>`).join('') : `<div class="empty-note">${t('no_customers_yet')}</div>`;
 
   const recent = sales.slice().reverse();
-  const recentRows = recent.length ? recent.map(s=>`
-    <tr style="${s.voided?'opacity:0.45;':''}">
-      <td class="mono">${new Date(s.timestamp).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</td>
-      <td>${s.items.map(i=>i.name+' ×'+i.qty).join(', ')}</td>
-      <td>${escapeHtml(s.customerName||'—')}</td>
-      <td class="mono">${escapeHtml(s.cashierName||'—')}</td>
-      <td class="mono">${escapeHtml(s.payment||'—')}</td>
-      <td class="mono" style="text-align:right;">${s.voided?t('voided'):money(s.total)}</td>
-      <td style="text-align:right;">${!s.voided?`<button class="void-link" data-void="${s.id}">${t('void')}</button>`:''}</td>
-    </tr>`).join('') : `<tr><td colspan="7"><div class="empty-note center">${t('no_sales_placeholder')}</div></td></tr>`;
+  const recentCells = recent.length ? recent.map(s=>`
+      <div class="ig-cell mono" style="${s.voided?'opacity:0.45;':''}">${new Date(s.timestamp).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+      <div class="ig-cell" style="${s.voided?'opacity:0.45;':''}">${s.items.map(i=>i.name+' ×'+i.qty).join(', ')}</div>
+      <div class="ig-cell" style="${s.voided?'opacity:0.45;':''}">${escapeHtml(s.customerName||'—')}</div>
+      <div class="ig-cell mono" style="${s.voided?'opacity:0.45;':''}">${escapeHtml(s.cashierName||'—')}</div>
+      <div class="ig-cell mono" style="${s.voided?'opacity:0.45;':''}">${escapeHtml(s.payment||'—')}</div>
+      <div class="ig-cell mono" style="${s.voided?'opacity:0.45;':''}">${s.voided?t('voided'):money(s.total)}</div>
+      <div class="ig-cell ig-actions">${!s.voided?`<button class="void-link" data-void="${s.id}">${t('void')}</button>`:''}</div>`).join('')
+    : `<div class="ig-empty">${t('no_sales_placeholder')}</div>`;
 
   const recentRestocks = restockLog.slice().reverse();
-  const restockRows = recentRestocks.length ? recentRestocks.map(rr=>`
-    <tr>
-      <td class="mono">${new Date(rr.timestamp).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</td>
-      <td>${escapeHtml(rr.productName)}</td>
-      <td class="mono">+${rr.qtyAdded}</td>
-      <td class="mono">${escapeHtml(rr.staffName||'—')}</td>
-    </tr>`).join('') : `<tr><td colspan="4"><div class="empty-note center">${t('no_restock_history')}</div></td></tr>`;
+  const restockCells = recentRestocks.length ? recentRestocks.map(rr=>`
+      <div class="ig-cell mono">${new Date(rr.timestamp).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+      <div class="ig-cell">${escapeHtml(rr.productName)}</div>
+      <div class="ig-cell mono">+${rr.qtyAdded}</div>
+      <div class="ig-cell mono">${escapeHtml(rr.staffName||'—')}</div>`).join('')
+    : `<div class="ig-empty">${t('no_restock_history')}</div>`;
 
   const periodRows = periodStats(reportPeriod);
-  const periodTableRows = periodRows.length ? periodRows.map(pr=>`
-    <tr>
-      <td>${escapeHtml(pr.label)}</td>
-      <td class="mono" style="text-align:right;">${pr.count}</td>
-      <td class="mono" style="text-align:right;">${money(pr.revenue)}</td>
-      <td class="mono" style="text-align:right;color:var(--green);">${money(pr.profit)}</td>
-    </tr>`).join('') : `<tr><td colspan="4"><div class="empty-note center">${t('no_period_data')}</div></td></tr>`;
+  const periodCells = periodRows.length ? periodRows.map(pr=>`
+      <div class="ig-cell">${escapeHtml(pr.label)}</div>
+      <div class="ig-cell mono">${pr.count}</div>
+      <div class="ig-cell mono">${money(pr.revenue)}</div>
+      <div class="ig-cell mono" style="color:var(--green);">${money(pr.profit)}</div>`).join('')
+    : `<div class="ig-empty">${t('no_period_data')}</div>`;
   const periodTabs = ['daily','monthly','yearly'].map(p=>`<button class="period-tab ${reportPeriod===p?'active':''}" data-period="${p}">${t(p)}</button>`).join('');
 
   return `
@@ -2076,10 +2082,13 @@ function renderReports(){
     <h3>${t('sales_profit_report')}</h3>
     <div class="period-tabs no-print">${periodTabs}</div>
     <div id="periodReportPrintArea">
-      <div class="scroll-table"><table class="inv" dir="ltr">
-        <thead><tr><th>${t('period_col')}</th><th style="text-align:right;">${t('total_sales')}</th><th style="text-align:right;">${t('revenue_col')}</th><th style="text-align:right;">${t('profit_col')}</th></tr></thead>
-        <tbody>${periodTableRows}</tbody>
-      </table></div>
+      <div class="table-scroll-x">
+      <div class="ig-grid period-grid" dir="ltr">
+        <div class="ig-head">${t('period_col')}</div><div class="ig-head">${t('total_sales')}</div>
+        <div class="ig-head">${t('revenue_col')}</div><div class="ig-head">${t('profit_col')}</div>
+        ${periodCells}
+      </div>
+      </div>
     </div>
     <div class="report-actions no-print">
       <button class="cancel" id="downloadPeriodBtn">${t('download')}</button>
@@ -2091,17 +2100,24 @@ function renderReports(){
   <div class="panel"><h3>${t('top_customers')}</h3><div class="scroll-list">${customerBars}</div></div>
   <div class="panel">
     <h3>${t('recent_sales')}</h3>
-    <div class="scroll-table"><table class="inv" dir="ltr">
-      <thead><tr><th>${t('when')}</th><th>${t('items_col')}</th><th>${t('customer_name')}</th><th>${t('cashier')}</th><th>${t('payment')}</th><th style="text-align:right;">${t('total')}</th><th></th></tr></thead>
-      <tbody>${recentRows}</tbody>
-    </table></div>
+    <div class="table-scroll-x">
+    <div class="ig-grid sales-grid" dir="ltr">
+      <div class="ig-head">${t('when')}</div><div class="ig-head">${t('items_col')}</div>
+      <div class="ig-head">${t('customer_name')}</div><div class="ig-head">${t('cashier')}</div>
+      <div class="ig-head">${t('payment')}</div><div class="ig-head">${t('total')}</div><div class="ig-head"></div>
+      ${recentCells}
+    </div>
+    </div>
   </div>
   <div class="panel">
     <h3>${t('restock_history')}</h3>
-    <div class="scroll-table"><table class="inv" dir="ltr">
-      <thead><tr><th>${t('when')}</th><th>${t('name')}</th><th>${t('restock_qty_label')}</th><th>${t('staff_col')}</th></tr></thead>
-      <tbody>${restockRows}</tbody>
-    </table></div>
+    <div class="table-scroll-x">
+    <div class="ig-grid restock-grid" dir="ltr">
+      <div class="ig-head">${t('when')}</div><div class="ig-head">${t('name')}</div>
+      <div class="ig-head">${t('restock_qty_label')}</div><div class="ig-head">${t('staff_col')}</div>
+      ${restockCells}
+    </div>
+    </div>
   </div>`;
 }
 
