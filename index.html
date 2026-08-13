@@ -185,7 +185,7 @@
     grid-template-columns: 90px 150px 100px 90px 100px 100px 130px 110px 130px;
   }
   .ig-grid.period-grid{
-    grid-template-columns: 1fr 110px 130px 130px;
+    grid-template-columns: minmax(190px,1fr) 110px 130px 130px;
   }
   .ig-grid.sales-grid{
     grid-template-columns: 130px 1fr 140px 120px 100px 100px 70px;
@@ -785,7 +785,7 @@ async function loadData(){
     loanDeleteLog = (loanDelRows||[]).map(r=>({...r.data, id:r.id}));
 
     loans = (loanRows||[]).map(l=>({
-      id:l.id, loanSeq:l.loan_seq, customerName:l.customer_name, createdAt:l.created_at,
+      id:l.id, loanSeq:l.loan_seq, customerName:l.customer_name, type:l.type||'borrower', createdAt:l.created_at,
       staffId:l.staff_id, staffName:l.staff_name,
       charges:(chargeRows||[]).filter(c=>c.loan_id===l.id).map(c=>({id:c.id, amount:Number(c.amount), note:c.note, date:c.date, saleId:c.sale_id, staffId:c.staff_id, staffName:c.staff_name})),
       payments:(paymentRows||[]).filter(p=>p.loan_id===l.id).map(p=>({id:p.id, amount:Number(p.amount), date:p.date, staffId:p.staff_id, staffName:p.staff_name}))
