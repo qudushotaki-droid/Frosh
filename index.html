@@ -22,11 +22,11 @@
   button{font-family:inherit; cursor:pointer;}
   input,select{font-family:inherit;}
 
-  #app{display:flex; height:100vh; width:100vw;}
+  #app{display:flex; height:100vh; height:-webkit-fill-available; height:100dvh; width:100vw;}
 
   /* ---------- LOGIN ---------- */
   .login-screen{
-    width:100vw; height:100vh; background:var(--ink); display:flex; align-items:center; justify-content:center;
+    width:100vw; height:100vh; height:100dvh; background:var(--ink); display:flex; align-items:center; justify-content:center;
     flex-direction:column;
   }
   .login-card{background:var(--ink-2); border-radius:20px; padding:36px 34px; width:340px; max-width:88vw; text-align:center;}
@@ -333,7 +333,7 @@
     .receipt .lines{max-height:26vh;}
     .receipt-handle{display:flex !important;}
     .receipt > h2{display:none;}
-    .view{padding:16px 14px 280px;}
+    .view{padding:16px 14px calc(280px + env(safe-area-inset-bottom));}
     .stat-row{grid-template-columns:repeat(2,1fr);}
     .settings-grid{grid-template-columns:1fr;}
     .topbar-account{display:flex !important;}
