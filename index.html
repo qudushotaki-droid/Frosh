@@ -16,7 +16,7 @@
     --accent:#c9922a; --accent-dim:#a3741e; --danger:#b3402f; --slate:#5c5a70; --slate-dim:#8b899f;
     --green:#2f9155; --amber:#d97706; --line:#e6dcc4;
   }
-  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; touch-action:manipulation;}
   html,body{height:100%; overflow-x:hidden; max-width:100vw;}
   body{margin:0; font-family:'Inter',sans-serif; background:var(--ink); color:var(--ink); overflow:hidden;}
   button{font-family:inherit; cursor:pointer;}
@@ -75,7 +75,7 @@
 
   /* ---------- SELL VIEW ---------- */
   .sell-grid{display:grid; grid-template-columns:1fr 360px; gap:20px; height:100%; align-items:start;}
-  .scan-box{background:var(--ink); border-radius:16px; padding:16px; margin-bottom:18px; display:flex; align-items:center; gap:12px;}
+  .scan-box{background:var(--ink); border-radius:16px; padding:16px; margin-bottom:18px; display:flex; align-items:center; gap:12px; position:sticky; top:0; z-index:15;}
   .scan-box input{flex:1; background:var(--ink-2); border:1px solid #2c3341; color:var(--paper); font-family:'JetBrains Mono',monospace; font-size:16px; padding:12px 14px; border-radius:10px; outline:none;}
   .scan-box input:focus{border-color:var(--accent);}
   .scan-box .hint{color:var(--slate-dim); font-size:11px; font-family:'JetBrains Mono',monospace; white-space:nowrap;}
