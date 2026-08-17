@@ -335,6 +335,7 @@
     .receipt > h2{display:none;}
     .view{padding:16px 14px calc(280px + env(safe-area-inset-bottom));}
     .stat-row{grid-template-columns:repeat(2,1fr);}
+    .stat.wide-stat{grid-column:1/-1;}
     .settings-grid{grid-template-columns:1fr;}
     .topbar-account{display:flex !important;}
     header.topbar .sub{display:none;}
@@ -2351,11 +2352,9 @@ function renderLoans(){
 
   return `
   <div class="stat-row">
-    <div class="stat"><div class="label">${t('loan_total_owed')}</div><div class="value" style="color:var(--danger);">${totalOwed}</div></div>
+    <div class="stat wide-stat"><div class="label">${t('loan_total_owed')}</div><div class="value" style="color:var(--danger);">${totalOwed}</div></div>
+    <div class="stat wide-stat"><div class="label">${t('loan_total_owed_by_shop')}</div><div class="value" style="color:var(--amber);">${totalOwedByShop}</div></div>
     <div class="stat"><div class="label">${t('loan_people_count')}</div><div class="value">${totalPeople}</div></div>
-  </div>
-  <div class="stat-row">
-    <div class="stat"><div class="label">${t('loan_total_owed_by_shop')}</div><div class="value" style="color:var(--amber);">${totalOwedByShop}</div></div>
     <div class="stat"><div class="label">${t('loan_givers_title')}</div><div class="value">${totalGiverPeople}</div></div>
   </div>
   <div class="inv-toolbar">
