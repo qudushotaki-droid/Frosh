@@ -1,0 +1,16 @@
+{
+  "name": "Asan Frosh",
+  "short_name": "Asan Frosh",
+  "description": "Point of sale, inventory, warehouse, and loan tracking for Asan Frosh",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1c1a2e",
+  "theme_color": "#1c1a2e",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
