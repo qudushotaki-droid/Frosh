@@ -27,32 +27,28 @@
   /* ---------- LOGIN ---------- */
   .login-screen{
     width:100vw; height:100vh; height:100dvh; background:var(--ink); display:flex; align-items:center; justify-content:center;
-    flex-direction:column;
+    flex-direction:column; padding:20px;
   }
-  .login-card{background:var(--ink-2); border-radius:20px; padding:36px 34px; width:340px; max-width:88vw; text-align:center;}
-  .login-card .brandmark{font-family:'JetBrains Mono',monospace; color:var(--paper); font-weight:700; letter-spacing:0.14em; font-size:13px; margin-bottom:6px;}
-  .login-card h2{color:#fff; font-size:20px; margin:2px 0 22px;}
-  .staff-list{display:flex; flex-direction:column; gap:8px; margin-bottom:18px;}
-  .staff-pick{
-    background:#262d3a; border:1px solid #323a49; color:var(--paper); padding:13px 16px; border-radius:12px;
-    font-weight:700; font-size:14px; text-align:left; display:flex; justify-content:space-between; align-items:center;
+  .login-card{background:var(--ink-2); border-radius:22px; padding:42px 36px; width:380px; max-width:92vw; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.35);}
+  .login-card .brandmark{font-family:'JetBrains Mono',monospace; color:var(--paper); font-weight:700; letter-spacing:0.16em; font-size:14px; margin-bottom:10px;}
+  .login-card h2{color:#fff; font-size:22px; margin:2px 0 28px; font-weight:700;}
+  .login-card .field{text-align:left; margin-bottom:18px;}
+  .login-card .field label{color:var(--slate-dim); font-size:11.5px;}
+  .login-card .field input{
+    width:100%; padding:15px 16px; border-radius:12px; border:1.5px solid #323a49;
+    background:#20263340;
+    font-size:16px; color:#fff;
   }
-  .staff-pick:hover{border-color:var(--accent);}
-  .staff-pick .role{color:var(--slate-dim); font-weight:500; font-size:11px; font-family:'JetBrains Mono',monospace;}
-  .pin-pad{display:none; flex-direction:column; align-items:center; gap:16px;}
-  .pin-pad.show{display:flex;}
-  .pin-dots{display:flex; gap:12px;}
-  .pin-dots span{width:12px; height:12px; border-radius:50%; border:2px solid var(--slate-dim); background:transparent;}
-  .pin-dots span.filled{background:var(--accent); border-color:var(--accent);}
-  .pin-keys{display:grid; grid-template-columns:repeat(3,56px); gap:10px;}
-  .pin-keys button{
-    width:56px; height:56px; border-radius:14px; background:#262d3a; border:1px solid #323a49; color:#fff;
-    font-size:19px; font-weight:700; font-family:'JetBrains Mono',monospace;
+  .login-card .field input::placeholder{color:#6b7080;}
+  .login-card .field input:focus{outline:none; border-color:var(--accent); background:#20263380;}
+  .login-err{color:#ff8a75; font-size:12.5px; font-weight:600; margin:-6px 0 16px; text-align:left;}
+  .login-card .login-submit{
+    width:100%; margin-top:4px; padding:16px; font-size:15.5px; font-weight:700;
+    border-radius:12px; background:var(--accent); color:var(--ink); border:none;
+    letter-spacing:0.02em; transition:filter 0.15s ease;
   }
-  .pin-keys button:hover{background:#2e3646;}
-  .pin-keys button.wide{grid-column:span 1; font-size:12px; color:var(--slate-dim);}
-  .login-err{color:var(--danger); font-size:12px; font-weight:600; height:16px; margin-top:2px;}
-  .back-to-staff{background:none;border:none;color:var(--slate-dim);font-size:12px;margin-top:14px;text-decoration:underline;}
+  .login-card .login-submit:hover{filter:brightness(1.08);}
+  .login-card .login-submit:active{filter:brightness(0.94);}
 
   /* ---------- SIDEBAR / NAV ---------- */
   nav.side{width:84px; background:var(--ink); display:flex; flex-direction:column; align-items:center; padding:20px 0; flex-shrink:0; border-right:1px solid #262c38;}
@@ -474,6 +470,13 @@ const T = {
     role:'Role', remove:'Remove', add_staff:'Add Staff', edit_staff:'Edit Staff',
     pin_label:'PIN (4-6 digits)', language:'Language',
     who_ringing:"Who's ringing up?", not_you:'← Not you?', incorrect_pin:'Incorrect PIN',
+    login_title:'Log in', username_label:'Username', password_label:'Password',
+    username_placeholder:'e.g. owner', password_placeholder:'Enter password',
+    password_placeholder_edit:'New password', leave_blank_keep:'leave blank to keep current',
+    log_in:'Log In', login_fill_both:'Enter your username and password', login_incorrect:'Incorrect username or password',
+    toast_username_invalid:'Username must be 3-20 letters, numbers, dots, dashes, or underscores',
+    toast_duplicate_username:'This username is already taken — please choose another',
+    toast_password_invalid:'Password must be at least 4 characters',
     log_out:'Log out', brand:'ASAN FROSH',
     toast_sale_complete:'Sale complete —', toast_no_match:'No product matches',
     toast_only_in_stock:'Only {n} in stock', toast_name_required:'Name is required',
@@ -565,6 +568,13 @@ const T = {
     role:'دنده', remove:'لرې کول', add_staff:'کارکوونکی اضافه کړئ', edit_staff:'کارکوونکی سم کړئ',
     pin_label:'پین کوډ (۴-۶ شمېرې)', language:'ژبه',
     who_ringing:'څوک پلورنه کوي؟', not_you:'← ستاسو نه دی؟', incorrect_pin:'ناسم پین کوډ',
+    login_title:'ننوتل', username_label:'کارن نوم', password_label:'پاسورډ',
+    username_placeholder:'د بېلګې په توګه owner', password_placeholder:'پاسورډ ولیکئ',
+    password_placeholder_edit:'نوی پاسورډ', leave_blank_keep:'خالي پرېږدئ ترڅو اوسنی وساتل شي',
+    log_in:'ننوتل', login_fill_both:'خپل کارن نوم او پاسورډ ولیکئ', login_incorrect:'ناسم کارن نوم یا پاسورډ',
+    toast_username_invalid:'کارن نوم باید ۳-۲۰ توري، شمېرې، یا dashes وي',
+    toast_duplicate_username:'دا کارن نوم مخکې کارول شوی — بل غوره کړئ',
+    toast_password_invalid:'پاسورډ باید لږترلږه ۴ توري ولري',
     log_out:'وتل', brand:'آسان فروش',
     toast_sale_complete:'پلورنه بشپړه شوه —', toast_no_match:'هیڅ توکی و نه موندل شو',
     toast_only_in_stock:'یوازې {n} په موجودي کې دي', toast_name_required:'نوم اړین دی',
@@ -656,6 +666,13 @@ const T = {
     role:'وظیفه', remove:'حذف', add_staff:'افزودن کارمند', edit_staff:'ویرایش کارمند',
     pin_label:'پین کد (۴ تا ۶ رقم)', language:'زبان',
     who_ringing:'چه کسی حساب می‌کند؟', not_you:'← شما نیستید؟', incorrect_pin:'پین کد نادرست',
+    login_title:'ورود', username_label:'نام کاربری', password_label:'رمز عبور',
+    username_placeholder:'مثلاً owner', password_placeholder:'رمز عبور را وارد کنید',
+    password_placeholder_edit:'رمز عبور جدید', leave_blank_keep:'برای حفظ رمز فعلی خالی بگذارید',
+    log_in:'ورود', login_fill_both:'نام کاربری و رمز عبور را وارد کنید', login_incorrect:'نام کاربری یا رمز عبور نادرست',
+    toast_username_invalid:'نام کاربری باید ۳ تا ۲۰ حرف، عدد، نقطه یا خط تیره باشد',
+    toast_duplicate_username:'این نام کاربری قبلاً استفاده شده — لطفاً نام دیگری انتخاب کنید',
+    toast_password_invalid:'رمز عبور باید حداقل ۴ کاراکتر باشد',
     log_out:'خروج', brand:'آسان فروش',
     toast_sale_complete:'فروش تکمیل شد —', toast_no_match:'محصولی مطابقت ندارد',
     toast_only_in_stock:'فقط {n} در موجودی است', toast_name_required:'نام الزامی است',
@@ -745,9 +762,6 @@ function hideLoadingOverlay(){
   const el = document.getElementById('loadingOverlay');
   if(el) el.classList.remove('show');
 }
-let pinBuffer = '';
-let loginStage = 'pick'; // 'pick' | 'pin'
-let pendingStaff = null;
 let loginError = '';
 let checkoutOpts = {payment:'Cash', discountMode:'flat', discountPct:0, discountFlat:0, customerName:'', loanNote:''};
 let dismissedAlert = false;
@@ -784,8 +798,8 @@ const fromProductRow = r => ({ id:r.id, name:r.name, barcode:r.barcode, price:Nu
 const toSaleRow = s => ({ id:s.id, timestamp:s.timestamp, items:s.items, subtotal:s.subtotal, discount_mode:s.discountMode, discount_pct:s.discountPct, discount_flat:s.discountFlat, discount:s.discount, tax:s.tax, total:s.total, payment:s.payment, customer_name:s.customerName, cashier_id:s.cashierId, cashier_name:s.cashierName, voided:!!s.voided });
 const fromSaleRow = r => ({ id:r.id, timestamp:r.timestamp, items:r.items, subtotal:Number(r.subtotal), discountMode:r.discount_mode, discountPct:r.discount_pct!=null?Number(r.discount_pct):r.discount_pct, discountFlat:r.discount_flat!=null?Number(r.discount_flat):r.discount_flat, discount:Number(r.discount), tax:Number(r.tax), total:Number(r.total), payment:r.payment, customerName:r.customer_name, cashierId:r.cashier_id, cashierName:r.cashier_name, voided:!!r.voided });
 
-const toStaffRow = s => ({ id:s.id, name:s.name, role:s.role, pin:s.pin, is_admin:!!s.isAdmin });
-const fromStaffRow = r => ({ id:r.id, name:r.name, role:r.role, isAdmin:!!r.is_admin, pin:r.pin });
+const toStaffRow = s => ({ id:s.id, name:s.name, role:s.role, username:s.username, password:s.password, is_admin:!!s.isAdmin });
+const fromStaffRow = r => ({ id:r.id, name:r.name, role:r.role, isAdmin:!!r.is_admin, username:r.username, password:r.password });
 
 async function loadData(){
   try{
@@ -976,36 +990,38 @@ function seedProducts(){
 }
 function seedStaff(){
   return [
-    {id:uid(), name:'Owner', role:'Admin', pin:'0000', isAdmin:true},
-    {id:uid(), name:'Cashier', role:'Cashier', pin:'1111', isAdmin:false},
+    {id:uid(), name:'Owner', role:'Admin', username:'owner', password:'owner123', isAdmin:true},
+    {id:uid(), name:'Cashier', role:'Cashier', username:'cashier', password:'cashier123', isAdmin:false},
   ];
 }
 function migrateStaffPermissions(){
   // Older saved staff records may not have an explicit isAdmin flag yet — infer it from role text once.
   staff.forEach(s=>{ if(typeof s.isAdmin !== 'boolean') s.isAdmin = /admin/i.test(s.role||''); });
+  // Older saved staff records used a PIN — give them a fallback username/password once so login still works.
+  staff.forEach(s=>{
+    if(!s.username) s.username = (s.name||'staff').trim().toLowerCase().replace(/[^a-z0-9]+/g,'') || ('staff'+s.id.slice(0,4));
+    if(!s.password) s.password = s.pin || '0000';
+  });
 }
 
 // ---------------- LOGIN LOGIC ----------------
-function pickStaff(id){ pendingStaff = staff.find(s=>s.id===id); loginStage='pin'; pinBuffer=''; loginError=''; render(); }
-function backToPick(){ loginStage='pick'; pendingStaff=null; pinBuffer=''; loginError=''; render(); }
-function pressDigit(d){
-  if(pinBuffer.length>=6) return;
-  pinBuffer += d;
-  if(pinBuffer.length === pendingStaff.pin.length){
-    if(pinBuffer === pendingStaff.pin){
-      currentUser = pendingStaff; loginStage='pick'; pendingStaff=null; pinBuffer=''; loginError='';
-      authLog.push({id:uid(), staffId:currentUser.id, staffName:currentUser.name, type:'login', timestamp:new Date().toISOString()});
-      saveAuthLog();
-      writeSession(currentUser.id);
-      render();
-    } else {
-      loginError = 'Incorrect PIN';
-      setTimeout(()=>{ pinBuffer=''; render(); }, 420);
-      render();
-    }
-  } else render();
+let loginForm = {username:'', password:''};
+function attemptLogin(){
+  const u = (loginForm.username||'').trim().toLowerCase();
+  const p = loginForm.password||'';
+  if(!u || !p){ loginError = t('login_fill_both'); render(); return; }
+  const match = staff.find(s=>(s.username||'').toLowerCase()===u);
+  if(!match || match.password !== p){
+    loginError = t('login_incorrect');
+    render();
+    return;
+  }
+  currentUser = match; loginForm = {username:'', password:''}; loginError = '';
+  authLog.push({id:uid(), staffId:currentUser.id, staffName:currentUser.name, type:'login', timestamp:new Date().toISOString()});
+  saveAuthLog();
+  writeSession(currentUser.id);
+  render();
 }
-function pressBackspace(){ pinBuffer = pinBuffer.slice(0,-1); render(); }
 function logout(){
   if(currentUser){
     authLog.push({id:uid(), staffId:currentUser.id, staffName:currentUser.name, type:'logout', timestamp:new Date().toISOString()});
@@ -1462,12 +1478,12 @@ async function deleteLoan(id, reason){
 // ---------------- STAFF (SETTINGS) LOGIC ----------------
 function openAddStaffModal(){
   if(!isAdmin()){ showToast(t('admin_only')); return; }
-  modalState = {mode:'addStaff', draft:{name:'',role:'Cashier',pin:'',isAdmin:false}}; render();
+  modalState = {mode:'addStaff', draft:{name:'',role:'Cashier',username:'',password:'',isAdmin:false}}; render();
 }
 function openEditStaffModal(id){
   if(!isAdmin()){ showToast(t('admin_only')); return; }
   const s = staff.find(x=>x.id===id);
-  modalState = {mode:'editStaff', id, draft:{...s}}; render();
+  modalState = {mode:'editStaff', id, draft:{...s, password:''}}; render();
 }
 async function saveStaffModal(){
   if(isSubmitting) return; isSubmitting = true; showLoadingOverlay();
@@ -1475,19 +1491,29 @@ async function saveStaffModal(){
   if(!isAdmin()){ showToast(t('admin_only')); return; }
   const d = modalState.draft;
   if(!d.name.trim()){ showToast(t('toast_name_required')); return; }
-  if(!/^\d{4,6}$/.test(d.pin)){ showToast(t('toast_pin_invalid')); return; }
+  const username = (d.username||'').trim().toLowerCase();
+  if(!/^[a-z0-9._-]{3,20}$/.test(username)){ showToast(t('toast_username_invalid')); return; }
+  const usernameDupe = staff.find(s=>(s.username||'').toLowerCase()===username && s.id!==modalState.id);
+  if(usernameDupe){ showToast(t('toast_duplicate_username')); return; }
+  const isNew = modalState.mode==='addStaff';
+  if(isNew && (!d.password || d.password.length<4)){ showToast(t('toast_password_invalid')); return; }
+  if(!isNew && d.password && d.password.length<4){ showToast(t('toast_password_invalid')); return; }
   const nameLower = d.name.trim().toLowerCase();
   const dupe = staff.find(s=>s.name.trim().toLowerCase()===nameLower && s.id!==modalState.id);
   if(dupe){ showToast(t('toast_duplicate_staff_name')); return; }
   const adminCount = staff.filter(x=>x.isAdmin).length;
-  if(modalState.mode==='editStaff'){
+  if(!isNew){
     const existing = staff.find(x=>x.id===modalState.id);
     if(existing && existing.isAdmin && !d.isAdmin && adminCount<=1){
       showToast(t('toast_keep_one_admin')); return;
     }
   }
-  if(modalState.mode==='addStaff') staff.push({id:uid(), name:d.name.trim(), role:d.role.trim()||'Staff', pin:d.pin, isAdmin:!!d.isAdmin});
-  else{ const s = staff.find(x=>x.id===modalState.id); Object.assign(s, {name:d.name.trim(), role:d.role.trim()||'Staff', pin:d.pin, isAdmin:!!d.isAdmin}); }
+  if(isNew) staff.push({id:uid(), name:d.name.trim(), role:d.role.trim()||'Staff', username, password:d.password, isAdmin:!!d.isAdmin});
+  else{
+    const s = staff.find(x=>x.id===modalState.id);
+    Object.assign(s, {name:d.name.trim(), role:d.role.trim()||'Staff', username, isAdmin:!!d.isAdmin});
+    if(d.password) s.password = d.password; // leave unchanged if left blank
+  }
   await saveStaff(); modalState=null; render();
   } finally { isSubmitting = false; hideLoadingOverlay(); }
 }
@@ -1809,36 +1835,16 @@ function langSwitchHtml(){
 }
 
 function renderLogin(){
-  if(loginStage==='pick'){
-    const list = staff.map(s=>`<button class="staff-pick" data-pick="${s.id}"><span>${escapeHtml(s.name)}</span><span class="role">${escapeHtml(s.role)}</span></button>`).join('');
-    return `
-    <div class="login-screen">
-      <div class="login-card">
-        <div class="brandmark">${t('brand')}</div>
-        <h2>${t('who_ringing')}</h2>
-        <div class="staff-list">${list}</div>
-        ${langSwitchHtml()}
-      </div>
-    </div>`;
-  }
-  const dots = Array.from({length:pendingStaff.pin.length}).map((_,i)=>`<span class="${i<pinBuffer.length?'filled':''}"></span>`).join('');
-  const keys = ['1','2','3','4','5','6','7','8','9','','0','⌫'];
-  const keyHtml = keys.map(k=>{
-    if(k==='') return `<div></div>`;
-    if(k==='⌫') return `<button class="wide" data-back="1">⌫</button>`;
-    return `<button data-digit="${k}">${k}</button>`;
-  }).join('');
   return `
   <div class="login-screen">
     <div class="login-card">
       <div class="brandmark">${t('brand')}</div>
-      <h2>${t('hi_enter_pin',{name:escapeHtml(pendingStaff.name)})}</h2>
-      <div class="pin-pad show">
-        <div class="pin-dots">${dots}</div>
-        <div class="pin-keys">${keyHtml}</div>
-        <div class="login-err">${loginError}</div>
-      </div>
-      <button class="back-to-staff" id="backToPick">${t('not_you')}</button>
+      <h2>${t('login_title')}</h2>
+      <div class="field"><label>${t('username_label')}</label><input type="text" id="login-username" autocomplete="username" value="${escapeAttr(loginForm.username)}" placeholder="${t('username_placeholder')}" autofocus></div>
+      <div class="field"><label>${t('password_label')}</label><input type="password" id="login-password" autocomplete="current-password" value="${escapeAttr(loginForm.password)}" placeholder="${t('password_placeholder')}"></div>
+      ${loginError?`<div class="login-err">${escapeHtml(loginError)}</div>`:''}
+      <button class="save login-submit" id="loginSubmit">${t('log_in')}</button>
+      ${langSwitchHtml()}
     </div>
   </div>`;
 }
@@ -3133,7 +3139,8 @@ function renderModal(){
       <h3>${modalState.mode==='addStaff'?t('add_staff'):t('edit_staff')}</h3>
       <div class="field"><label>${t('name')}</label><input type="text" id="s-name" value="${escapeAttr(d.name)}" placeholder="e.g. Alex"></div>
       <div class="field"><label>${t('role')}</label><input type="text" id="s-role" value="${escapeAttr(d.role)}" placeholder="e.g. Cashier"></div>
-      <div class="field"><label>${t('pin_label')}</label><input type="text" inputmode="numeric" id="s-pin" value="${escapeAttr(d.pin)}" placeholder="e.g. 1234"></div>
+      <div class="field"><label>${t('username_label')}</label><input type="text" id="s-username" value="${escapeAttr(d.username)}" placeholder="${t('username_placeholder')}" autocapitalize="off"></div>
+      <div class="field"><label>${t('password_label')}${modalState.mode==='editStaff'?' ('+t('leave_blank_keep')+')':''}</label><input type="password" id="s-password" value="${escapeAttr(d.password)}" placeholder="${modalState.mode==='editStaff'?t('password_placeholder_edit'):t('password_placeholder')}" autocomplete="new-password"></div>
       <div class="field admin-toggle">
         <label class="admin-toggle-label"><input type="checkbox" id="s-admin" ${d.isAdmin?'checked':''}> ${t('admin_access')}</label>
       </div>
@@ -3151,14 +3158,16 @@ function render(){
 
   if(!currentUser){
     app.innerHTML = renderLogin();
-    if(loginStage==='pick'){
-      document.querySelectorAll('[data-pick]').forEach(b=>b.addEventListener('click',()=>pickStaff(b.dataset.pick)));
-      document.querySelectorAll('[data-setlang]').forEach(b=>b.addEventListener('click', async ()=>{ settings.lang = b.dataset.setlang; await saveSettings(); render(); }));
-    } else {
-      document.querySelectorAll('[data-digit]').forEach(b=>b.addEventListener('click',()=>pressDigit(b.dataset.digit)));
-      const bk = document.querySelector('[data-back]'); if(bk) bk.addEventListener('click', pressBackspace);
-      const back = document.getElementById('backToPick'); if(back) back.addEventListener('click', backToPick);
-    }
+    const uEl = document.getElementById('login-username');
+    const pEl = document.getElementById('login-password');
+    if(uEl) uEl.addEventListener('input', e=>{ loginForm.username = e.target.value; });
+    if(pEl) pEl.addEventListener('input', e=>{ loginForm.password = e.target.value; });
+    const submitBtn = document.getElementById('loginSubmit');
+    if(submitBtn) submitBtn.addEventListener('click', attemptLogin);
+    const onEnter = e=>{ if(e.key==='Enter') attemptLogin(); };
+    if(uEl) uEl.addEventListener('keydown', onEnter);
+    if(pEl) pEl.addEventListener('keydown', onEnter);
+    document.querySelectorAll('[data-setlang]').forEach(b=>b.addEventListener('click', async ()=>{ settings.lang = b.dataset.setlang; await saveSettings(); render(); }));
     return;
   }
 
@@ -3423,7 +3432,7 @@ function render(){
       if(confirmBtn) confirmBtn.addEventListener('click', async ()=>{ await confirmDeleteWithReason(); });
     } else {
       const bind = (id,key)=>{ const el = document.getElementById(id); el.addEventListener('input', e=>{ modalState.draft[key]=e.target.value; }); };
-      bind('s-name','name'); bind('s-role','role'); bind('s-pin','pin');
+      bind('s-name','name'); bind('s-role','role'); bind('s-username','username'); bind('s-password','password');
       const adminCheck = document.getElementById('s-admin'); if(adminCheck) adminCheck.addEventListener('change', e=>{ modalState.draft.isAdmin = e.target.checked; });
       document.getElementById('modalCancel').addEventListener('click', closeModal);
       document.getElementById('modalSaveStaff').addEventListener('click', saveStaffModal);
