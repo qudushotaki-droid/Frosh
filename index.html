@@ -14,9 +14,7 @@
 <meta name="apple-mobile-web-app-title" content="Asan Frosh">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   :root{
     --ink:#1c1a2e; --ink-2:#262341; --paper:#faf7ef; --paper-2:#f1e9d8;
@@ -34,17 +32,38 @@
   /* ---------- LOGIN ---------- */
   .login-screen{
     width:100vw; height:100vh; height:100dvh; background:var(--ink); display:flex; align-items:center; justify-content:center;
-    flex-direction:column; padding:20px;
+    flex-direction:column; padding:20px; position:relative; overflow:hidden;
   }
-  .login-card{background:var(--ink-2); border-radius:22px; padding:42px 36px; width:380px; max-width:92vw; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.35);}
-  .login-card .brandmark{font-family:'JetBrains Mono',monospace; color:var(--paper); font-weight:700; letter-spacing:0.16em; font-size:14px; margin-bottom:10px;}
-  .login-card h2{color:#fff; font-size:22px; margin:2px 0 28px; font-weight:700;}
-  .login-card .field{text-align:left; margin-bottom:18px;}
+  .login-screen::before, .login-screen::after{
+    content:''; position:absolute; width:520px; height:520px; border-radius:50%;
+    background:radial-gradient(circle, rgba(201,146,42,0.14) 0%, rgba(201,146,42,0) 70%);
+    pointer-events:none;
+  }
+  .login-screen::before{top:-180px; left:-160px;}
+  .login-screen::after{bottom:-200px; right:-180px; background:radial-gradient(circle, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 70%);}
+  .login-hex-pattern{
+    position:absolute; inset:0; pointer-events:none; opacity:0.5;
+    background-image:
+      linear-gradient(30deg, transparent 48%, rgba(255,255,255,0.045) 49%, rgba(255,255,255,0.045) 51%, transparent 52%),
+      linear-gradient(150deg, transparent 48%, rgba(255,255,255,0.045) 49%, rgba(255,255,255,0.045) 51%, transparent 52%),
+      linear-gradient(90deg, transparent 48%, rgba(255,255,255,0.03) 49%, rgba(255,255,255,0.03) 51%, transparent 52%);
+    background-size:64px 110px;
+  }
+  .login-card{
+    background:var(--ink-2); border-radius:22px; padding:42px 36px; width:380px; max-width:92vw; text-align:center;
+    box-shadow:0 20px 60px rgba(0,0,0,0.35); position:relative; z-index:1;
+    animation:loginCardIn 0.6s cubic-bezier(.16,.9,.3,1) backwards;
+  }
+  @keyframes loginCardIn{from{opacity:0; transform:translateY(24px) scale(0.97);} to{opacity:1; transform:translateY(0) scale(1);}}
+  .login-card .brandmark{font-family:'JetBrains Mono',monospace; color:var(--accent); font-weight:700; letter-spacing:0.22em; font-size:13px; margin-bottom:14px; text-transform:uppercase;}
+  .login-card h2{color:#fff; font-size:24px; margin:2px 0 28px; font-weight:800; letter-spacing:-0.01em;}
+  .login-card .field{text-align:left; margin-bottom:18px; animation:fadeSlideUp 0.5s cubic-bezier(.2,.8,.2,1) backwards;}
+  .login-card .field:nth-of-type(1){animation-delay:0.08s;} .login-card .field:nth-of-type(2){animation-delay:0.14s;}
   .login-card .field label{color:var(--slate-dim); font-size:11.5px;}
   .login-card .field input{
     width:100%; padding:15px 16px; border-radius:12px; border:1.5px solid #323a49;
     background:#20263340;
-    font-size:16px; color:#fff;
+    font-size:16px; color:#fff; transition:border-color 0.15s ease, background 0.15s ease;
   }
   .login-card .field input::placeholder{color:#6b7080;}
   .login-card .field input:focus{outline:none; border-color:var(--accent); background:#20263380;}
@@ -52,9 +71,9 @@
   .login-card .login-submit{
     width:100%; margin-top:4px; padding:16px; font-size:15.5px; font-weight:700;
     border-radius:12px; background:var(--accent); color:var(--ink); border:none;
-    letter-spacing:0.02em; transition:filter 0.15s ease;
+    letter-spacing:0.02em; transition:filter 0.15s ease, transform 0.15s cubic-bezier(.2,.8,.2,1), box-shadow 0.15s ease;
   }
-  .login-card .login-submit:hover{filter:brightness(1.08);}
+  .login-card .login-submit:hover{filter:brightness(1.08); transform:translateY(-2px); box-shadow:0 10px 26px rgba(201,146,42,0.35);}
   .login-card .login-submit:active{filter:brightness(0.94);}
 
   /* ---------- SIDEBAR / NAV ---------- */
@@ -75,6 +94,10 @@
   header.topbar h1{font-size:20px; margin:0; font-weight:800; letter-spacing:-0.01em;}
   header.topbar .sub{font-size:12px; color:var(--slate); font-family:'JetBrains Mono',monospace; flex:1; text-align:right;}
   .view{flex:1; overflow:auto; min-height:0; padding:24px 28px 100px;}
+  .view.view-switch{animation:fadeSlideUp 0.35s cubic-bezier(.2,.8,.2,1) backwards;}
+  @keyframes popIn{from{opacity:0; transform:translateY(10px) scale(0.96);} to{opacity:1; transform:translateY(0) scale(1);}}
+  @keyframes fadeSlideUp{from{opacity:0; transform:translateY(16px);} to{opacity:1; transform:translateY(0);}}
+  @keyframes fadeIn{from{opacity:0;} to{opacity:1;}}
 
   /* ---------- SELL VIEW ---------- */
   .sell-grid{display:grid; grid-template-columns:1fr 360px; gap:20px; height:100%; align-items:start;}
@@ -171,7 +194,9 @@
   /* ---------- INVENTORY VIEW ---------- */
   .inv-toolbar{display:flex; gap:10px; margin-bottom:16px; align-items:center; flex-wrap:wrap;}
   .inv-toolbar input[type=text]{flex:1; padding:11px 14px; border:1px solid var(--line); border-radius:10px; font-size:13.5px; background:#fff;}
-  .btn-primary{background:var(--ink); color:#fff; border:none; padding:11px 18px; border-radius:10px; font-weight:700; font-size:13px; white-space:nowrap;}
+  .btn-primary{background:var(--ink); color:#fff; border:none; padding:11px 18px; border-radius:10px; font-weight:700; font-size:13px; white-space:nowrap; transition:transform 0.15s cubic-bezier(.2,.8,.2,1), box-shadow 0.15s ease;}
+  .btn-primary:hover{transform:translateY(-2px); box-shadow:0 8px 20px rgba(28,26,46,0.25);}
+  .btn-primary:active{transform:translateY(0); box-shadow:none;}
   .btn-primary.godaam-btn{background:var(--accent);}
   .btn-primary.godaam-btn:hover{background:var(--accent-dim);}
   .btn-primary:hover{background:var(--ink-2);}
@@ -224,7 +249,8 @@
   .stockpill.out{background:#fbe8ea; color:var(--danger);}
   .marginpill{font-family:'JetBrains Mono',monospace; font-size:11.5px; font-weight:700;}
   .marginpill.good{color:var(--green);} .marginpill.mid{color:var(--amber);} .marginpill.bad{color:var(--danger);}
-  .rowact{background:none;border:none;color:var(--slate-dim);font-size:13px;padding:4px 6px;}
+  .rowact{background:none;border:none;color:var(--slate-dim);font-size:13px;padding:4px 6px; transition:color 0.15s ease, transform 0.15s ease;}
+  .rowact:hover{color:var(--accent); transform:translateX(2px);}
   .rowact:hover{color:var(--ink);}
   .rowact.del:hover{color:var(--danger);}
 
@@ -241,9 +267,12 @@
   .field-row{display:flex; gap:10px;}
   .field-row .field{flex:1;}
   .modal-actions{display:flex; gap:10px; margin-top:18px;}
-  .modal-actions button{flex:1; padding:11px; border-radius:10px; font-weight:700; font-size:13.5px; border:none;}
+  .modal-actions button{flex:1; padding:11px; border-radius:10px; font-weight:700; font-size:13.5px; border:none; transition:transform 0.15s cubic-bezier(.2,.8,.2,1), box-shadow 0.15s ease;}
+  .modal-actions button:hover{transform:translateY(-2px);}
+  .modal-actions button:active{transform:translateY(0);}
   .modal-actions .cancel{background:var(--paper-2); color:var(--slate);}
   .modal-actions .save{background:var(--accent); color:#fff;}
+  .modal-actions .save:hover{box-shadow:0 8px 20px rgba(201,146,42,0.35);}
   .modal-actions .danger{background:var(--danger); color:#fff;}
   .loan-detail-note{background:var(--paper-2); border-radius:8px; padding:8px 10px; font-size:12.5px; color:var(--slate); margin-bottom:12px;}
   .loan-summary{background:var(--paper-2); border-radius:10px; padding:10px 12px; margin-bottom:10px;}
@@ -281,10 +310,14 @@
   /* ---------- REPORTS VIEW ---------- */
   .stat-row{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px;}
   .stat{background:#fff; border-radius:14px; padding:16px 18px;}
+  .view.view-switch .stat{animation:popIn 0.45s cubic-bezier(.2,.8,.2,1) backwards;}
+  .view.view-switch .stat:nth-child(1){animation-delay:0.02s;} .view.view-switch .stat:nth-child(2){animation-delay:0.07s;}
+  .view.view-switch .stat:nth-child(3){animation-delay:0.12s;} .view.view-switch .stat:nth-child(4){animation-delay:0.17s;}
   .stat .label{font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--slate); font-weight:700;}
-  .stat .value{font-family:'JetBrains Mono',monospace; font-size:24px; font-weight:700; margin-top:6px;}
+  .stat .value{font-family:'JetBrains Mono',monospace; font-size:26px; font-weight:800; margin-top:6px; letter-spacing:-0.02em;}
   .stat .value.profit{color:var(--green);}
   .panel{background:#fff; border-radius:14px; padding:20px; margin-bottom:20px;}
+  .view.view-switch .panel{animation:fadeSlideUp 0.5s cubic-bezier(.2,.8,.2,1) backwards; animation-delay:0.1s;}
   .panel h3{margin:0 0 16px; font-size:13px; text-transform:uppercase; letter-spacing:0.06em; color:var(--slate); display:flex; justify-content:space-between;}
   .bar-row{display:flex; align-items:center; gap:10px; margin-bottom:10px;}
   .bar-row .bname{width:130px; font-size:12.5px; font-weight:600; flex-shrink:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
@@ -372,8 +405,9 @@
   .lang-switch{display:flex; gap:6px; justify-content:center; margin-top:16px;}
   .lang-switch button{
     background:#262d3a; border:1px solid #323a49; color:var(--slate-dim); padding:6px 12px; border-radius:20px;
-    font-size:11px; font-weight:700;
+    font-size:11px; font-weight:700; transition:transform 0.15s cubic-bezier(.2,.8,.2,1), border-color 0.15s ease;
   }
+  .lang-switch button:hover{transform:translateY(-1px); border-color:var(--accent);}
   .lang-switch button.active{background:var(--accent); color:#fff; border-color:var(--accent);}
   select#langSelect{padding:10px 12px; border:1px solid var(--line); border-radius:9px; font-size:13.5px; width:100%; background:#fff;}
 </style>
@@ -1844,6 +1878,7 @@ function langSwitchHtml(){
 function renderLogin(){
   return `
   <div class="login-screen">
+    <div class="login-hex-pattern"></div>
     <div class="login-card">
       <div class="brandmark">${t('brand')}</div>
       <h2>${t('login_title')}</h2>
@@ -2179,8 +2214,7 @@ function renderReports(){
       </div>
     </div>
     <div class="report-actions no-print">
-      <button class="cancel" id="downloadPeriodBtn">${t('download')}</button>
-      <button class="save" id="printPeriodBtn">${t('print')}</button>
+        <button class="save" id="printPeriodBtn">${t('print')}</button>
     </div>
   </div>
   <div class="panel"><h3>${t('top_sellers')}</h3><div class="scroll-list">${bars}</div></div>
@@ -2375,7 +2409,6 @@ function renderLoans(){
     <button class="btn-primary ${loanSortByLastPayment?'godaam-btn':''}" id="sortLoansBtn">${t('sort_by_last_payment')}</button>
     <button class="btn-primary" id="addLoanBtn">${t('add_loan')}</button>
     <button class="cancel" id="printLoanListBtn">${t('print')}</button>
-    <button class="cancel" id="downloadLoanListBtn">${t('download')}</button>
   </div>
 
   <h4 class="loan-subhead">${t('loan_borrowers_title')}</h4>
@@ -2488,95 +2521,6 @@ function buildReceiptHtml(s){
     </div>
   </body></html>`;
 }
-function buildReceiptPdf(s){
-  const { jsPDF } = window.jspdf || {};
-  if(!jsPDF) return null;
-  const doc = new jsPDF({unit:'pt', format:[300, 480 + s.items.length*16]});
-  let y = 30;
-  doc.setFont('courier','bold'); doc.setFontSize(13);
-  doc.text(t('brand'), 150, y, {align:'center'}); y += 16;
-  doc.setFont('courier','normal'); doc.setFontSize(9);
-  doc.text(new Date(s.timestamp).toLocaleString(), 150, y, {align:'center'}); y += 13;
-  doc.text(t('cashier')+': '+s.cashierName, 150, y, {align:'center'}); y += 13;
-  if(s.customerName){ doc.text(t('customer_name')+': '+s.customerName, 150, y, {align:'center'}); y += 13; }
-  y += 6; doc.setDrawColor(200); doc.line(20, y, 280, y); y += 16;
-  doc.setFontSize(9);
-  s.items.forEach(it=>{
-    doc.text(`${it.name} x${it.qty}`, 20, y);
-    doc.text(money(it.price*it.qty), 280, y, {align:'right'});
-    y += 15;
-  });
-  y += 4; doc.line(20, y, 280, y); y += 16;
-  const line = (label, val, bold)=>{
-    doc.setFont('courier', bold?'bold':'normal');
-    doc.text(label, 20, y); doc.text(val, 280, y, {align:'right'}); y += bold?18:14;
-  };
-  line(t('subtotal'), money(s.subtotal));
-  if(s.discount>0) line(t('discount'), '−'+money(s.discount));
-  if(s.tax>0) line(t('tax'), money(s.tax));
-  doc.line(20, y-4, 280, y-4); y += 4;
-  line(t('total'), money(s.total), true);
-  line(t('payment'), t(s.payment.toLowerCase())||s.payment);
-  return doc;
-}
-function downloadReceipt(){
-  if(!receiptModal) return;
-  try{
-    const html = buildReceiptHtml(receiptModal);
-    const filename = 'receipt-' + new Date(receiptModal.timestamp).getTime() + '.pdf';
-    downloadHtmlAsPdf(html, filename);
-  }catch(e){
-    showToast(t('print_unavailable'));
-  }
-}
-// Downloads any of our print-ready HTML templates as a real PDF by rendering
-// it through the browser (so Pashto/Dari/any script displays correctly,
-// unlike jsPDF's built-in fonts which only support Latin text and show
-// garbled boxes for Arabic-script languages) and snapshotting it as an image.
-async function downloadHtmlAsPdf(html, filename){
-  if(isSubmitting) return; isSubmitting = true; showLoadingOverlay();
-  try{
-    if(!window.html2canvas || !window.jspdf){ showToast(t('print_unavailable')); return; }
-    let frame = document.getElementById('pdfRenderFrame');
-    if(frame) frame.remove();
-    frame = document.createElement('iframe');
-    frame.id = 'pdfRenderFrame';
-    frame.style.position = 'fixed';
-    frame.style.left = '-99999px';
-    frame.style.top = '0';
-    frame.style.width = '800px';
-    frame.style.height = '600px';
-    frame.style.border = '0';
-    document.body.appendChild(frame);
-    const doc = frame.contentWindow.document;
-    doc.open(); doc.write(html); doc.close();
-
-    await new Promise(resolve=>{
-      if(doc.readyState==='complete') setTimeout(resolve, 200);
-      else frame.onload = ()=>setTimeout(resolve, 200);
-    });
-    try{ if(frame.contentWindow.document.fonts) await frame.contentWindow.document.fonts.ready; }catch(e){}
-
-    const body = doc.body;
-    const widthPx = Math.max(body.scrollWidth, 800);
-    const heightPx = Math.max(body.scrollHeight, 100);
-    frame.style.height = heightPx + 'px';
-
-    const canvas = await html2canvas(body, {scale:2, backgroundColor:'#ffffff', width:widthPx, windowWidth:widthPx});
-    const imgData = canvas.toDataURL('image/png');
-
-    const { jsPDF } = window.jspdf;
-    const pageWidthPt = widthPx * 0.75;
-    const pageHeightPt = heightPx * 0.75;
-    const pdf = new jsPDF({unit:'pt', format:[pageWidthPt, pageHeightPt]});
-    pdf.addImage(imgData, 'PNG', 0, 0, pageWidthPt, pageHeightPt);
-    pdf.save(filename);
-
-    frame.remove();
-  }catch(e){
-    showToast(t('print_unavailable'));
-  } finally { isSubmitting = false; hideLoadingOverlay(); }
-}
 // Prints via a hidden iframe instead of window.open — opening a new tab/window
 // can fully kick the user out of the app when installed as a PWA, with no way
 // back. An iframe never navigates the page away, so the app stays put.
@@ -2642,51 +2586,6 @@ function buildPeriodReportHtml(period, rows){
     </table>
   </body></html>`;
 }
-function buildPeriodReportPdf(period, rows){
-  const { jsPDF } = window.jspdf || {};
-  if(!jsPDF) return null;
-  const doc = new jsPDF({unit:'pt', format:'a4'});
-  const periodLabel = t(period);
-  let y = 40;
-  doc.setFont('courier','bold'); doc.setFontSize(15);
-  doc.text(t('brand'), 297, y, {align:'center'}); y += 18;
-  doc.setFont('courier','normal'); doc.setFontSize(10);
-  doc.text(periodLabel+' '+t('sales_profit_report')+' — '+new Date().toLocaleDateString(), 297, y, {align:'center'}); y += 26;
-  const colX = [50, 300, 400, 500];
-  doc.setFont('courier','bold'); doc.setFontSize(9);
-  doc.text(t('period_col'), colX[0], y);
-  doc.text(t('total_sales'), colX[1], y, {align:'right'});
-  doc.text(t('revenue_col'), colX[2], y, {align:'right'});
-  doc.text(t('profit_col'), colX[3], y, {align:'right'});
-  y += 6; doc.setDrawColor(20); doc.line(50, y, 545, y); y += 14;
-  doc.setFont('courier','normal');
-  let totalRevenue=0, totalProfit=0, totalCount=0;
-  rows.forEach(r=>{
-    if(y > 780){ doc.addPage(); y = 40; }
-    doc.text(String(r.label), colX[0], y);
-    doc.text(String(r.count), colX[1], y, {align:'right'});
-    doc.text(money(r.revenue), colX[2], y, {align:'right'});
-    doc.text(money(r.profit), colX[3], y, {align:'right'});
-    totalRevenue += r.revenue; totalProfit += r.profit; totalCount += r.count;
-    y += 16;
-  });
-  y += 6; doc.line(50, y, 545, y); y += 16;
-  doc.setFont('courier','bold');
-  doc.text(t('total'), colX[0], y);
-  doc.text(String(totalCount), colX[1], y, {align:'right'});
-  doc.text(money(totalRevenue), colX[2], y, {align:'right'});
-  doc.text(money(totalProfit), colX[3], y, {align:'right'});
-  return doc;
-}
-function downloadPeriodReport(){
-  try{
-    const rows = periodStats(reportPeriod);
-    const html = buildPeriodReportHtml(reportPeriod, rows);
-    downloadHtmlAsPdf(html, reportPeriod + '-report-' + Date.now() + '.pdf');
-  }catch(e){
-    showToast(t('print_unavailable'));
-  }
-}
 function tryPrintPeriodReport(){
   try{
     const rows = periodStats(reportPeriod);
@@ -2723,46 +2622,6 @@ function buildLoanListHtml(){
     <tbody>${rows}</tbody></table>
     <div class="totals">${t('loan_total_owed')}: ${totalOwed}</div>
   </body></html>`;
-}
-function buildLoanListPdf(){
-  const { jsPDF } = window.jspdf || {};
-  if(!jsPDF) return null;
-  const doc = new jsPDF({unit:'pt', format:'a4'});
-  let y = 40;
-  doc.setFont('courier','bold'); doc.setFontSize(15);
-  doc.text(t('brand'), 297, y, {align:'center'}); y += 18;
-  doc.setFont('courier','normal'); doc.setFontSize(10);
-  doc.text(t('loans')+' — '+new Date().toLocaleDateString(), 297, y, {align:'center'}); y += 26;
-  const colX = [50, 150, 330, 400, 470];
-  doc.setFont('courier','bold'); doc.setFontSize(9);
-  doc.text(t('loan_id'), colX[0], y); doc.text(t('customer_name'), colX[1], y);
-  doc.text(t('loan_original'), colX[2], y, {align:'right'}); doc.text(t('loan_paid'), colX[3], y, {align:'right'});
-  doc.text(t('loan_remaining'), colX[4], y, {align:'right'});
-  y += 6; doc.setDrawColor(20); doc.line(50, y, 545, y); y += 14;
-  doc.setFont('courier','normal');
-  let totals = {AFN:0, USD:0};
-  loans.forEach(l=>{
-    if(y > 780){ doc.addPage(); y = 40; }
-    doc.text(formatLoanCode(l.loanSeq||0), colX[0], y);
-    doc.text(String(l.customerName).slice(0,22), colX[1], y);
-    doc.text(loanMoney(loanChargedTotal(l), l), colX[2], y, {align:'right'});
-    doc.text(loanMoney(loanPaidTotal(l), l), colX[3], y, {align:'right'});
-    doc.text(loanMoney(loanRemaining(l), l), colX[4], y, {align:'right'});
-    totals[l.currency==='USD'?'USD':'AFN'] += loanRemaining(l);
-    y += 16;
-  });
-  y += 6; doc.line(50, y, 545, y); y += 16;
-  doc.setFont('courier','bold');
-  doc.text(t('loan_total_owed')+': '+formatCurrencyTotals(totals), 545, y, {align:'right'});
-  return doc;
-}
-function downloadLoanList(){
-  try{
-    const html = buildLoanListHtml();
-    downloadHtmlAsPdf(html, 'loans-'+Date.now()+'.pdf');
-  }catch(e){
-    showToast(t('print_unavailable'));
-  }
 }
 function tryPrintLoanList(){
   try{
@@ -2841,52 +2700,6 @@ function buildLoanDetailHtml(loan){
     <table><thead><tr><th>${t('when')}</th><th>${t('loan_payment_amount')}</th><th>${t('loan_note')}</th></tr></thead><tbody>${payRows||`<tr><td colspan="3">${t('no_payments_yet')}</td></tr>`}</tbody></table>
   </body></html>`;
 }
-function buildLoanDetailPdf(loan){
-  const { jsPDF } = window.jspdf || {};
-  if(!jsPDF) return null;
-  const rowCount = (loan.charges||[]).length + (loan.payments||[]).length;
-  const doc = new jsPDF({unit:'pt', format:[320, 420 + rowCount*16]});
-  let y = 30;
-  doc.setFont('courier','bold'); doc.setFontSize(13);
-  doc.text(t('brand'), 160, y, {align:'center'}); y += 16;
-  doc.setFont('courier','normal'); doc.setFontSize(9);
-  doc.text(loan.customerName+' — '+formatLoanCode(loan.loanSeq||0), 160, y, {align:'center'}); y += 13;
-  doc.text(new Date().toLocaleString(), 160, y, {align:'center'}); y += 16;
-  doc.setDrawColor(200); doc.line(20, y, 300, y); y += 16;
-  const line = (label, val, bold)=>{
-    doc.setFont('courier', bold?'bold':'normal'); doc.setFontSize(bold?11:9);
-    doc.text(label, 20, y); doc.text(val, 300, y, {align:'right'}); y += bold?18:14;
-  };
-  line(t('loan_original'), loanMoney(loanChargedTotal(loan), loan));
-  line(t('loan_paid'), loanMoney(loanPaidTotal(loan), loan));
-  doc.line(20, y-4, 300, y-4); y += 4;
-  line(t('loan_remaining'), loanMoney(loanRemaining(loan), loan), true);
-  y += 10;
-  doc.setFont('courier','bold'); doc.setFontSize(10); doc.text(t('loan_charge_history'), 20, y); y += 14;
-  doc.setFontSize(9); doc.setFont('courier','normal');
-  (loan.charges||[]).forEach(c=>{
-    doc.text(new Date(c.date).toLocaleDateString(), 20, y);
-    doc.text(loanMoney(c.amount, loan), 300, y, {align:'right'}); y += 14;
-  });
-  y += 8;
-  doc.setFont('courier','bold'); doc.setFontSize(10); doc.text(t('loan_payment_history'), 20, y); y += 14;
-  doc.setFontSize(9); doc.setFont('courier','normal');
-  (loan.payments||[]).forEach(p=>{
-    doc.text(new Date(p.date).toLocaleDateString(), 20, y);
-    doc.text(loanMoney(p.amount, loan), 300, y, {align:'right'}); y += 14;
-  });
-  return doc;
-}
-function downloadLoanDetail(loanId){
-  try{
-    const loan = loans.find(l=>l.id===loanId);
-    if(!loan) return;
-    const html = buildLoanDetailHtml(loan);
-    downloadHtmlAsPdf(html, 'loan-'+formatLoanCode(loan.loanSeq||0)+'.pdf');
-  }catch(e){
-    showToast(t('print_unavailable'));
-  }
-}
 function tryPrintLoanDetail(loanId){
   try{
     const loan = loans.find(l=>l.id===loanId);
@@ -2926,7 +2739,6 @@ function renderReceiptModal(){
       </div>
       <div class="modal-actions no-print">
         <button class="cancel" id="closeReceiptBtn">${t('close')}</button>
-        <button class="cancel" id="downloadReceiptBtn">${t('download')}</button>
         <button class="save" id="printReceiptBtn">${t('print')}</button>
       </div>
     </div>
@@ -3088,7 +2900,6 @@ function renderModal(){
         <span class="stockpill ${loanStatusClass(status)}" style="margin-bottom:14px;display:inline-block;">${t('loan_status_'+status)}</span>
         <div class="modal-actions" style="margin-top:0;margin-bottom:14px;">
           <button class="cancel" id="printLoanDetailBtn" data-loanid="${loan.id}">${t('print')}</button>
-          <button class="cancel" id="downloadLoanDetailBtn" data-loanid="${loan.id}">${t('download')}</button>
         </div>
         <h4 class="loan-subhead">${t('loan_charge_history')}</h4>
         <div class="scroll-list" style="max-height:120px;">${chargeRows}</div>
@@ -3263,7 +3074,7 @@ function render(){
           <button id="logoutBtnMobile">${t('log_out')}</button>
         </div>
       </header>
-      <div class="view">${viewHtml}</div>
+      <div class="view${sameView?'':' view-switch'}">${viewHtml}</div>
     </main>
     <nav class="bottom">${renderNav()}</nav>
     ${renderModal()}
@@ -3383,7 +3194,6 @@ function render(){
   if(currentView==='reports'){
     document.querySelectorAll('[data-void]').forEach(b=>b.addEventListener('click',()=>voidSale(b.dataset.void)));
     document.querySelectorAll('[data-period]').forEach(b=>b.addEventListener('click',()=>{ reportPeriod = b.dataset.period; render(); }));
-    const downloadPeriodBtn = document.getElementById('downloadPeriodBtn'); if(downloadPeriodBtn) downloadPeriodBtn.addEventListener('click', downloadPeriodReport);
     const printPeriodBtn = document.getElementById('printPeriodBtn'); if(printPeriodBtn) printPeriodBtn.addEventListener('click', tryPrintPeriodReport);
   }
   if(currentView==='loans'){
@@ -3398,7 +3208,6 @@ function render(){
     }
     const sortLoansBtn = document.getElementById('sortLoansBtn'); if(sortLoansBtn) sortLoansBtn.addEventListener('click', ()=>{ loanSortByLastPayment = !loanSortByLastPayment; render(); });
     const printLoanListBtn = document.getElementById('printLoanListBtn'); if(printLoanListBtn) printLoanListBtn.addEventListener('click', tryPrintLoanList);
-    const downloadLoanListBtn = document.getElementById('downloadLoanListBtn'); if(downloadLoanListBtn) downloadLoanListBtn.addEventListener('click', downloadLoanList);
   }
   if(currentView==='settings'){
     const addStaffBtn = document.getElementById('addStaffBtn'); if(addStaffBtn) addStaffBtn.addEventListener('click', openAddStaffModal);
@@ -3463,7 +3272,6 @@ function render(){
         openDeleteReasonModal('loan', modalState.loanId, loan ? loan.customerName : '');
       });
       const printLoanDetailBtn = document.getElementById('printLoanDetailBtn'); if(printLoanDetailBtn) printLoanDetailBtn.addEventListener('click', ()=>tryPrintLoanDetail(modalState.loanId));
-      const downloadLoanDetailBtn = document.getElementById('downloadLoanDetailBtn'); if(downloadLoanDetailBtn) downloadLoanDetailBtn.addEventListener('click', ()=>downloadLoanDetail(modalState.loanId));
     } else if(modalState.mode==='addGodaam'){
       const bind = (id,key)=>{ const el = document.getElementById(id); if(el) el.addEventListener('input', e=>{ modalState.draft[key]=e.target.value; }); };
       bind('g-name','name'); bind('g-bags','bagsCount'); bind('g-dpb','dozensPerBag'); bind('g-extra','extraDozens'); bind('g-cost','costPerDozen');
@@ -3509,7 +3317,6 @@ function render(){
 
   if(receiptModal){
     const printBtn = document.getElementById('printReceiptBtn'); if(printBtn) printBtn.addEventListener('click', tryPrintReceipt);
-    const downloadBtn = document.getElementById('downloadReceiptBtn'); if(downloadBtn) downloadBtn.addEventListener('click', downloadReceipt);
     const closeBtn = document.getElementById('closeReceiptBtn'); if(closeBtn) closeBtn.addEventListener('click', ()=>{ receiptModal = null; render(); });
     const bg = document.getElementById('receiptModalBg'); if(bg) bg.addEventListener('click', e=>{ if(e.target.id==='receiptModalBg'){ receiptModal = null; render(); } });
   }
