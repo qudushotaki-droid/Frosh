@@ -79,22 +79,22 @@
   /* ---------- SIDEBAR / NAV ---------- */
   nav.side{width:84px; background:var(--ink); display:flex; flex-direction:column; align-items:center; padding:20px 0; flex-shrink:0; border-right:1px solid #262c38;}
   nav.side .brand{color:var(--paper); font-family:'JetBrains Mono',monospace; font-weight:700; font-size:11px; letter-spacing:0.14em; writing-mode:vertical-rl; margin-bottom:24px; opacity:0.9;}
-  nav.side .navbtn{background:none; border:none; color:var(--slate-dim); width:56px; height:56px; border-radius:14px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; margin-bottom:8px; font-size:9px; letter-spacing:0.06em; text-transform:uppercase; font-weight:600; transition:background .15s, color .15s;}
+  nav.side .navbtn{background:none; border:none; color:var(--slate-dim); width:56px; height:56px; border-radius:14px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; margin-bottom:8px; font-size:9px; letter-spacing:0.06em; text-transform:uppercase; font-weight:600; transition:background .25s cubic-bezier(.2,.8,.2,1), color .25s ease, transform .2s cubic-bezier(.2,.8,.2,1);}
   nav.side .navbtn svg{width:20px; height:20px;}
-  nav.side .navbtn.active{background:var(--accent); color:#fff;}
-  nav.side .navbtn:not(.active):hover{background:#232a36; color:var(--paper);}
+  nav.side .navbtn.active{background:var(--accent); color:#fff; box-shadow:0 6px 18px rgba(201,146,42,0.35);}
+  nav.side .navbtn:not(.active):hover{background:#232a36; color:var(--paper); transform:translateY(-1px);}
   nav.side .who{margin-top:auto; text-align:center;}
   nav.side .who .avatar{width:34px; height:34px; border-radius:50%; background:#2e3646; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; margin:0 auto 6px;}
   nav.side .who .name{color:var(--slate-dim); font-size:9px; font-weight:700; max-width:70px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   nav.side .logoutbtn{background:none;border:none;color:var(--slate-dim);font-size:9px;margin-top:6px;text-decoration:underline;}
 
   /* ---------- MAIN ---------- */
-  main{flex:1; background:var(--paper); display:flex; flex-direction:column; overflow:hidden; min-height:0;}
+  main{flex:1; background:radial-gradient(ellipse at top left, #fdfaf2 0%, var(--paper) 45%); display:flex; flex-direction:column; overflow:hidden; min-height:0;}
   header.topbar{padding:18px 28px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); flex-shrink:0; gap:14px;}
-  header.topbar h1{font-size:20px; margin:0; font-weight:800; letter-spacing:-0.01em;}
-  header.topbar .sub{font-size:12px; color:var(--slate); font-family:'JetBrains Mono',monospace; flex:1; text-align:right;}
+  header.topbar h1{font-size:22px; margin:0; font-weight:800; letter-spacing:-0.02em;}
+  header.topbar .sub{font-size:11.5px; color:var(--slate); font-family:'JetBrains Mono',monospace; letter-spacing:0.02em; flex:1; text-align:right; text-transform:uppercase;}
   .view{flex:1; overflow:auto; min-height:0; padding:24px 28px 100px;}
-  .view.view-switch{animation:fadeSlideUp 0.35s cubic-bezier(.2,.8,.2,1) backwards;}
+  .view.view-switch{animation:fadeSlideUp 0.6s cubic-bezier(.16,.8,.24,1) backwards;}
   @keyframes popIn{from{opacity:0; transform:translateY(10px) scale(0.96);} to{opacity:1; transform:translateY(0) scale(1);}}
   @keyframes fadeSlideUp{from{opacity:0; transform:translateY(16px);} to{opacity:1; transform:translateY(0);}}
   @keyframes fadeIn{from{opacity:0;} to{opacity:1;}}
@@ -229,8 +229,8 @@
     grid-template-columns: 130px 1fr 90px 140px;
   }
   .ig-head{
-    font-size:10.5px; text-transform:uppercase; letter-spacing:0.08em; color:var(--slate);
-    padding:10px 14px; border-bottom:1px solid var(--line); font-family:'JetBrains Mono',monospace;
+    font-size:10.5px; text-transform:uppercase; letter-spacing:0.09em; color:var(--ink); font-weight:800;
+    padding:11px 14px; border-bottom:2px solid var(--accent); font-family:'JetBrains Mono',monospace;
     white-space:nowrap; text-align:left; background:#fff;
   }
   .ig-cell{
@@ -309,16 +309,35 @@
 
   /* ---------- REPORTS VIEW ---------- */
   .stat-row{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px;}
-  .stat{background:#fff; border-radius:14px; padding:16px 18px;}
-  .view.view-switch .stat{animation:popIn 0.45s cubic-bezier(.2,.8,.2,1) backwards;}
-  .view.view-switch .stat:nth-child(1){animation-delay:0.02s;} .view.view-switch .stat:nth-child(2){animation-delay:0.07s;}
-  .view.view-switch .stat:nth-child(3){animation-delay:0.12s;} .view.view-switch .stat:nth-child(4){animation-delay:0.17s;}
-  .stat .label{font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--slate); font-weight:700;}
-  .stat .value{font-family:'JetBrains Mono',monospace; font-size:26px; font-weight:800; margin-top:6px; letter-spacing:-0.02em;}
-  .stat .value.profit{color:var(--green);}
+  .stat{
+    background:linear-gradient(135deg, var(--ink) 0%, var(--ink-2) 100%);
+    border-radius:14px; padding:14px 16px; position:relative; overflow:hidden;
+    box-shadow:0 8px 20px rgba(28,26,46,0.14); min-width:0;
+  }
+  .stat::after{
+    content:''; position:absolute; top:-40%; right:-25%; width:110px; height:110px; border-radius:50%;
+    background:radial-gradient(circle, rgba(201,146,42,0.22) 0%, rgba(201,146,42,0) 70%); pointer-events:none;
+  }
+  .view.view-switch .stat{animation:popIn 0.7s cubic-bezier(.16,.8,.24,1) backwards;}
+  .view.view-switch .stat:nth-child(1){animation-delay:0.04s;} .view.view-switch .stat:nth-child(2){animation-delay:0.12s;}
+  .view.view-switch .stat:nth-child(3){animation-delay:0.2s;} .view.view-switch .stat:nth-child(4){animation-delay:0.28s;}
+  .stat .label{font-size:10.5px; text-transform:uppercase; letter-spacing:0.09em; color:var(--slate-dim); font-weight:700; position:relative;}
+  .stat .value{
+    font-family:'JetBrains Mono',monospace; font-weight:800; margin-top:6px; letter-spacing:-0.02em; color:#fff; position:relative;
+    font-size:22px; overflow-wrap:break-word; word-break:break-word; line-height:1.15;
+  }
+  .stat .value.profit{color:#4ade80 !important;}
+  .stat .value[style*="--danger"]{color:#ff7a68 !important;}
+  .stat .value[style*="--green"]{color:#4ade80 !important;}
+  .stat .value[style*="--amber"]{color:#ffc670 !important;}
   .panel{background:#fff; border-radius:14px; padding:20px; margin-bottom:20px;}
-  .view.view-switch .panel{animation:fadeSlideUp 0.5s cubic-bezier(.2,.8,.2,1) backwards; animation-delay:0.1s;}
-  .panel h3{margin:0 0 16px; font-size:13px; text-transform:uppercase; letter-spacing:0.06em; color:var(--slate); display:flex; justify-content:space-between;}
+  .view.view-switch .panel{animation:fadeSlideUp 0.75s cubic-bezier(.16,.8,.24,1) backwards; animation-delay:0.1s;}
+  .panel h3{
+    margin:0 0 18px; font-size:12.5px; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink); font-weight:800;
+    display:flex; justify-content:space-between; align-items:center; padding-bottom:12px; border-bottom:2px solid var(--paper-2);
+  }
+  .panel h3::before{content:''; display:inline-block; width:4px; height:13px; background:var(--accent); border-radius:2px; margin-right:9px; flex-shrink:0;}
+  html[dir="rtl"] .panel h3::before{margin-right:0; margin-left:9px;}
   .bar-row{display:flex; align-items:center; gap:10px; margin-bottom:10px;}
   .bar-row .bname{width:130px; font-size:12.5px; font-weight:600; flex-shrink:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .bar-track{flex:1; background:var(--paper-2); border-radius:6px; height:20px; overflow:hidden;}
@@ -378,9 +397,9 @@
     header.topbar{padding:14px 16px;}
   }
   nav.bottom{display:none;}
-  nav.bottom .navbtn{background:none; border:none; color:var(--slate-dim); display:flex; flex-direction:column; align-items:center; gap:3px; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em;}
+  nav.bottom .navbtn{background:none; border:none; color:var(--slate-dim); display:flex; flex-direction:column; align-items:center; gap:3px; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; transition:color .2s ease, transform .2s cubic-bezier(.2,.8,.2,1);}
   nav.bottom .navbtn svg{width:20px;height:20px;}
-  nav.bottom .navbtn.active{color:var(--accent);}
+  nav.bottom .navbtn.active{color:var(--accent); transform:translateY(-2px);}
   .receipt-handle{display:none; align-items:center; justify-content:space-between; cursor:pointer; padding:2px 0 10px; gap:10px;}
   .receipt-handle .rh-info{font-size:12.5px; font-weight:700; color:var(--slate);}
   .receipt-handle .rh-total{font-family:'JetBrains Mono',monospace; font-weight:800; font-size:15px; color:var(--ink); display:flex; align-items:center; gap:8px;}
@@ -537,6 +556,7 @@ const T = {
     scan_camera:'Scan with Camera', camera_unsupported:"Camera barcode scanning isn't supported in this browser/device. Try a USB scanner or type the barcode manually.",
     camera_permission_error:'Camera access was denied or unavailable.', close:'Close', point_camera:'Point camera at a barcode…',
     print:'Print', print_unavailable:'Printing isn\'t available here — use your browser or device share menu instead.',
+    print_blocked:'Your browser blocked this print request — check your browser\'s print/pop-up permissions for this site and try again.',
     popup_blocked:'Your browser blocked the new tab — please allow pop-ups for this page and try again.',
     download:'Download',
     admin_only:'Only an Admin can do this.', admin_access:'Admin access', not_admin_notice:'Ask an Admin to make inventory or staff changes.'
@@ -635,6 +655,7 @@ const T = {
     scan_camera:'د کامرې سره سکن کول', camera_unsupported:'د کامرې بارکوډ سکن کول په دې براوزر/وسیله کې نه ملاتړ کیږي. د USB سکینر وکاروئ یا بارکوډ په لاس ولیکئ.',
     camera_permission_error:'د کامرې لاسرسی رد شو یا نه و شتون لري.', close:'بندول', point_camera:'کامره بارکوډ ته ورواړوئ…',
     print:'چاپول', print_unavailable:'چاپول دلته شتون نلري — د خپل براوزر یا وسیلې د شریکولو مینو وکاروئ.',
+    print_blocked:'ستاسو براوزر د چاپ غوښتنه بلاک کړه — د دې سایټ لپاره د خپل براوزر د چاپ اجازې وګورئ او بیا هڅه وکړئ.',
     popup_blocked:'ستاسو براوزر نوی ټب بند کړ — مهرباني وکړئ د دې پاڼې لپاره پاپ-اپونه اجازه ورکړئ او بیا هڅه وکړئ.',
     download:'ډاونلوډ',
     admin_only:'یوازې مدیر کولی شي دا کار وکړي.', admin_access:'د مدیر لاسرسی', not_admin_notice:'د زیرمې یا کارکوونکو بدلونونو لپاره له مدیر وغواړئ.'
@@ -733,6 +754,7 @@ const T = {
     scan_camera:'اسکن با کمره', camera_unsupported:'اسکن بارکد با کمره در این مرورگر/دستگاه پشتیبانی نمی‌شود. از اسکنر USB استفاده کنید یا بارکد را دستی وارد کنید.',
     camera_permission_error:'دسترسی به کمره رد شد یا در دسترس نبود.', close:'بستن', point_camera:'کمره را به سمت بارکد بگیرید…',
     print:'چاپ', print_unavailable:'چاپ کردن در اینجا در دسترس نیست — از مرورگر یا منوی اشتراک‌گذاری دستگاه خود استفاده کنید.',
+    print_blocked:'مرورگر شما درخواست چاپ را مسدود کرد — مجوزهای چاپ مرورگر خود را برای این سایت بررسی کنید و دوباره تلاش کنید.',
     popup_blocked:'مرورگر شما تب جدید را مسدود کرد — لطفاً پنجره‌های بازشو را برای این صفحه اجازه دهید و دوباره تلاش کنید.',
     download:'دانلود',
     admin_only:'فقط ادمین می‌تواند این کار را انجام دهد.', admin_access:'دسترسی ادمین', not_admin_notice:'برای تغییرات انبار یا کارمندان از یک ادمین بخواهید.'
@@ -2539,9 +2561,25 @@ function printHtmlContent(html){
     document.body.appendChild(frame);
     const doc = frame.contentWindow.document;
     doc.open(); doc.write(html); doc.close();
+
+    const cleanup = ()=>{ const f = document.getElementById('printFrame'); if(f) f.remove(); };
+    // Wait for the actual print flow to finish (fires once the user dismisses
+    // the OS print dialog/prompt) rather than removing on a fixed timer — a
+    // fixed timer can delete the iframe's content before a slow tap on iOS's
+    // "Allow printing" prompt, leaving a blank printout.
+    let cleaned = false;
+    const safeCleanup = ()=>{ if(cleaned) return; cleaned = true; cleanup(); };
+    try{ frame.contentWindow.addEventListener('afterprint', safeCleanup); }catch(e){}
+    setTimeout(safeCleanup, 60000); // fallback in case afterprint never fires
+
     const doPrint = ()=>{
-      try{ frame.contentWindow.focus(); frame.contentWindow.print(); }catch(e){}
-      setTimeout(()=>{ const f = document.getElementById('printFrame'); if(f) f.remove(); }, 1000);
+      try{
+        frame.contentWindow.focus();
+        frame.contentWindow.print();
+      }catch(e){
+        safeCleanup();
+        showToast(t('print_blocked'));
+      }
     };
     if(frame.contentWindow.document.readyState === 'complete') setTimeout(doPrint, 200);
     else frame.onload = ()=>setTimeout(doPrint, 200);
