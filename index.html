@@ -176,6 +176,7 @@
   @keyframes spin{to{transform:rotate(360deg);}}
   .toggle-row{display:flex; gap:8px;}
   .toggle-opt{flex:1; padding:10px; border-radius:8px; border:1px solid var(--line); background:var(--paper); cursor:pointer; font-weight:600; font-size:13px;}
+  .toggle-opt:disabled{opacity:0.4; cursor:not-allowed;}
   .toggle-opt.active{background:var(--ink); color:var(--paper); border-color:var(--ink);}
   .customer-field input{width:100%; padding:9px 11px; border:1px solid var(--line); border-radius:8px; font-size:13px;}
   .customer-input-wrap{position:relative;}
@@ -458,6 +459,10 @@ const T = {
     no_loans_yet:'No loans recorded yet.', no_payments_yet:'No payments recorded yet.',
     loan_note:'Note (optional)', loan_note_placeholder:'Reason for loan, or any note',
     loan_payment_history:'Payment History', loan_add_payment:'Add Payment',
+    loan_date_label:'Date', loan_new_entry:'New Entry', loan_entry_type_label:'Entry Type',
+    loan_entry_add_more:'Add More Loan', loan_entry_record_payment:'Record Payment',
+    loan_entry_fully_paid_note:'This loan is fully paid — you can only add more loan.',
+    toast_loan_charge_added:'Added {n} to the loan',
     loan_id:'Loan ID', loan_charge_history:'Charge History', loan_search_placeholder:'Search by name or loan ID…',
     godaam_label:'Warehouse', godaam_back:'← Back to Inventory', add_godaam_item:'+ Add Item',
     godaam_total_value:'Total Warehouse Value', godaam_item_count:'Items in Warehouse',
@@ -576,6 +581,10 @@ const T = {
     no_loans_yet:'تر اوسه هیڅ پور نه دی ثبت شوی.', no_payments_yet:'تر اوسه هیڅ تادیه نه ده ثبت شوې.',
     loan_note:'یادداشت (اختیاري)', loan_note_placeholder:'د پور دلیل، یا کوم یادداشت',
     loan_payment_history:'د تادیاتو تاریخچه', loan_add_payment:'تادیه اضافه کړئ',
+    loan_date_label:'نېټه', loan_new_entry:'نوی ننوت', loan_entry_type_label:'د ننوت ډول',
+    loan_entry_add_more:'نور پور زیات کړئ', loan_entry_record_payment:'تادیه ثبت کړئ',
+    loan_entry_fully_paid_note:'دا پور بشپړ تادیه شوی — تاسو یوازې کولی شئ نور پور زیات کړئ.',
+    toast_loan_charge_added:'{n} پور ته زیات شو',
     loan_id:'د پور آی ډي', loan_charge_history:'د پور اخیستلو تاریخچه', loan_search_placeholder:'د نوم یا پور آی ډي له مخې ولټوئ...',
     godaam_label:'ګدام', godaam_back:'← بیرته زیرمې ته', add_godaam_item:'+ توکی اضافه کړئ',
     godaam_total_value:'د ګدام ټول ارزښت', godaam_item_count:'په ګدام کې توکي',
@@ -675,6 +684,10 @@ const T = {
     no_loans_yet:'هنوز قرضه‌ای ثبت نشده.', no_payments_yet:'هنوز پرداختی ثبت نشده.',
     loan_note:'یادداشت (اختیاری)', loan_note_placeholder:'دلیل قرضه، یا هر یادداشتی',
     loan_payment_history:'تاریخچه پرداخت‌ها', loan_add_payment:'افزودن پرداخت',
+    loan_date_label:'تاریخ', loan_new_entry:'ثبت جدید', loan_entry_type_label:'نوع ثبت',
+    loan_entry_add_more:'افزودن قرضه بیشتر', loan_entry_record_payment:'ثبت پرداخت',
+    loan_entry_fully_paid_note:'این قرضه به طور کامل پرداخت شده — فقط می‌توانید قرضه بیشتر اضافه کنید.',
+    toast_loan_charge_added:'{n} به قرضه اضافه شد',
     loan_id:'شناسه قرضه', loan_charge_history:'تاریخچه قرضه‌گیری', loan_search_placeholder:'جستجو با نام یا شناسه قرضه...',
     godaam_label:'گدام', godaam_back:'← بازگشت به انبار', add_godaam_item:'+ افزودن جنس',
     godaam_total_value:'ارزش کل گدام', godaam_item_count:'اجناس در گدام',
@@ -1471,7 +1484,7 @@ async function saveRestockModal(){
 
 // ---------------- LOAN LOGIC ----------------
 function openAddLoanModal(){
-  modalState = {mode:'addLoan', draft:{customerName:'', amount:'', note:'', type:'borrower', currency:'AFN'}};
+  modalState = {mode:'addLoan', draft:{customerName:'', amount:'', note:'', type:'borrower', currency:'AFN', date:new Date().toISOString().slice(0,10)}};
   render();
 }
 async function saveAddLoanModal(){
@@ -1487,17 +1500,19 @@ async function saveAddLoanModal(){
   if(existing && d.currency && d.currency!==existing.currency){
     showToast(t('toast_loan_currency_locked', {currency:existing.currency}));
   }
-  addLoanCharge(name, amount, d.note, null, type, d.currency);
+  addLoanCharge(name, amount, d.note, null, type, d.currency, d.date);
   await saveLoans();
   showToast(t('toast_loan_added'));
   modalState = null; render();
   } finally { isSubmitting = false; hideLoadingOverlay(); }
 }
 function openLoanDetailModal(id){
-  modalState = {mode:'loanDetail', loanId:id, draft:{amount:'', date:new Date().toISOString().slice(0,10), note:''}};
+  const loan = loans.find(l=>l.id===id);
+  const remaining = loan ? loanRemaining(loan) : 0;
+  modalState = {mode:'loanDetail', loanId:id, draft:{amount:'', date:new Date().toISOString().slice(0,10), note:'', entryType: remaining>0 ? 'payment' : 'charge'}};
   render();
 }
-async function saveLoanPayment(){
+async function saveLoanEntry(){
   if(isSubmitting) return; isSubmitting = true; showLoadingOverlay();
   try{
   const loan = loans.find(l=>l.id===modalState.loanId);
@@ -1505,16 +1520,24 @@ async function saveLoanPayment(){
   const d = modalState.draft;
   const amount = parseFloat(d.amount);
   if(isNaN(amount) || amount<=0){ showToast(t('toast_loan_invalid_amount')); return; }
-  const remaining = loanRemaining(loan);
-  const applied = Math.min(amount, remaining);
-  loan.payments = loan.payments || [];
-  loan.payments.push({
-    id:uid(), amount:applied, date:d.date||new Date().toISOString().slice(0,10),
-    note:(d.note||'').trim(), staffId:currentUser.id, staffName:currentUser.name
-  });
-  await saveLoans();
-  showToast(t('toast_payment_recorded', {n:loanMoney(applied, loan)}));
-  modalState = {mode:'loanDetail', loanId:loan.id, draft:{amount:'', date:new Date().toISOString().slice(0,10), note:''}};
+
+  if(d.entryType==='charge'){
+    addLoanCharge(loan.customerName, amount, d.note, null, loan.type, loan.currency, d.date);
+    await saveLoans();
+    showToast(t('toast_loan_charge_added', {n:loanMoney(amount, loan)}));
+  } else {
+    const remaining = loanRemaining(loan);
+    const applied = Math.min(amount, remaining);
+    loan.payments = loan.payments || [];
+    loan.payments.push({
+      id:uid(), amount:applied, date:d.date||new Date().toISOString().slice(0,10),
+      note:(d.note||'').trim(), staffId:currentUser.id, staffName:currentUser.name
+    });
+    await saveLoans();
+    showToast(t('toast_payment_recorded', {n:loanMoney(applied, loan)}));
+  }
+  const newRemaining = loanRemaining(loan);
+  modalState = {mode:'loanDetail', loanId:loan.id, draft:{amount:'', date:new Date().toISOString().slice(0,10), note:'', entryType: newRemaining>0 ? 'payment' : 'charge'}};
   render();
   } finally { isSubmitting = false; hideLoadingOverlay(); }
 }
@@ -1653,11 +1676,11 @@ function findLoanByName(name, type){
   if(!q) return null;
   return loans.find(l=>(l.customerName||'').trim().toLowerCase() === q && (l.type||'borrower')===(type||'borrower')) || null;
 }
-function addLoanCharge(customerName, amount, note, saleId, type, currency){
+function addLoanCharge(customerName, amount, note, saleId, type, currency, date){
   type = type==='giver' ? 'giver' : 'borrower';
   let loan = findLoanByName(customerName, type);
   const charge = {
-    id:uid(), amount, note:(note||'').trim(), date:new Date().toISOString(),
+    id:uid(), amount, note:(note||'').trim(), date: date ? new Date(date).toISOString() : new Date().toISOString(),
     saleId:saleId||null, staffId:currentUser.id, staffName:currentUser.name
   };
   if(loan){
@@ -1668,7 +1691,7 @@ function addLoanCharge(customerName, amount, note, saleId, type, currency){
     loan = {
       id:uid(), loanSeq:nextLoanCode(), customerName:customerName, type,
       currency: currency==='USD' ? 'USD' : 'AFN',
-      createdAt:new Date().toISOString(), staffId:currentUser.id, staffName:currentUser.name,
+      createdAt: date ? new Date(date).toISOString() : new Date().toISOString(), staffId:currentUser.id, staffName:currentUser.name,
       charges:[charge], payments:[]
     };
     loans.push(loan);
@@ -2899,6 +2922,7 @@ function renderModal(){
           <div class="empty-note">${t('loan_currency_note')}</div>
         </div>
         <div class="field"><label>${t('loan_original')} <span class="req-star">*</span></label><input type="number" step="0.01" min="0" id="l-amount" value="${escapeAttr(d.amount)}" placeholder="0.00"></div>
+        <div class="field"><label>${t('loan_date_label')}</label><input type="date" id="l-date" value="${escapeAttr(d.date)}"></div>
         <div class="field"><label>${t('loan_note')}</label><input type="text" id="l-note" value="${escapeAttr(d.note)}" placeholder="${t('loan_note_placeholder')}"></div>
         <div class="modal-actions">
           <button class="cancel" id="modalCancel">${t('cancel')}</button>
@@ -2943,18 +2967,23 @@ function renderModal(){
         <div class="scroll-list" style="max-height:120px;">${chargeRows}</div>
         <h4 class="loan-subhead">${t('loan_payment_history')}</h4>
         <div class="scroll-list" style="max-height:120px;">${payRows}</div>
-        ${remaining>0 ? `
-        <h4 class="loan-subhead">${t('loan_add_payment')}</h4>
+        <h4 class="loan-subhead">${t('loan_new_entry')}</h4>
+        <div class="field"><label>${t('loan_entry_type_label')}</label>
+          <div class="toggle-row">
+            <button type="button" class="toggle-opt ${d.entryType==='charge'?'active':''}" id="l-entry-charge">${t('loan_entry_add_more')}</button>
+            <button type="button" class="toggle-opt ${d.entryType!=='charge'&&remaining>0?'active':''}" id="l-entry-payment" ${remaining<=0?'disabled':''}>${t('loan_entry_record_payment')}</button>
+          </div>
+          ${remaining<=0?`<div class="empty-note">${t('loan_entry_fully_paid_note')}</div>`:''}
+        </div>
         <div class="field-row">
-          <div class="field"><label>${t('loan_payment_amount')}</label><input type="number" step="0.01" min="0" max="${remaining}" id="lp-amount" value="${escapeAttr(d.amount)}" placeholder="0.00"></div>
+          <div class="field"><label>${d.entryType==='charge'?t('loan_original'):t('loan_payment_amount')}</label><input type="number" step="0.01" min="0" ${d.entryType!=='charge'?`max="${remaining}"`:''} id="lp-amount" value="${escapeAttr(d.amount)}" placeholder="0.00"></div>
           <div class="field"><label>${t('loan_payment_date')}</label><input type="date" id="lp-date" value="${escapeAttr(d.date)}"></div>
         </div>
         <div class="field"><label>${t('loan_note')}</label><input type="text" id="lp-note" value="${escapeAttr(d.note)}" placeholder="${t('loan_note_placeholder')}"></div>
-        ` : ''}
         <div class="modal-actions">
           <button class="cancel" id="modalCancel">${t('close')}</button>
           <button class="cancel danger" id="modalDeleteLoan">${t('delete')}</button>
-          ${remaining>0 ? `<button class="save" id="modalSaveLoanPayment">${t('loan_add_payment')}</button>` : ''}
+          <button class="save" id="modalSaveLoanEntry">${d.entryType==='charge'?t('loan_entry_add_more'):t('loan_entry_record_payment')}</button>
         </div>
       </div>
     </div>`;
@@ -3293,7 +3322,7 @@ function render(){
       document.getElementById('modalSaveRestock').addEventListener('click', saveRestockModal);
     } else if(modalState.mode==='addLoan'){
       const bind = (id,key)=>{ const el = document.getElementById(id); if(el) el.addEventListener('input', e=>{ modalState.draft[key]=e.target.value; }); };
-      bind('l-customer','customerName'); bind('l-amount','amount'); bind('l-note','note');
+      bind('l-customer','customerName'); bind('l-amount','amount'); bind('l-note','note'); bind('l-date','date');
       const bBtn = document.getElementById('l-type-borrower'); if(bBtn) bBtn.addEventListener('click', ()=>{ modalState.draft.type='borrower'; render(); });
       const gBtn = document.getElementById('l-type-giver'); if(gBtn) gBtn.addEventListener('click', ()=>{ modalState.draft.type='giver'; render(); });
       const afnBtn = document.getElementById('l-currency-afn'); if(afnBtn) afnBtn.addEventListener('click', ()=>{ modalState.draft.currency='AFN'; render(); });
@@ -3304,7 +3333,9 @@ function render(){
       const bind = (id,key)=>{ const el = document.getElementById(id); if(el) el.addEventListener('input', e=>{ modalState.draft[key]=e.target.value; }); };
       bind('lp-amount','amount'); bind('lp-date','date'); bind('lp-note','note');
       document.getElementById('modalCancel').addEventListener('click', closeModal);
-      const savePayBtn = document.getElementById('modalSaveLoanPayment'); if(savePayBtn) savePayBtn.addEventListener('click', saveLoanPayment);
+      const chargeBtn = document.getElementById('l-entry-charge'); if(chargeBtn) chargeBtn.addEventListener('click', ()=>{ modalState.draft.entryType='charge'; render(); });
+      const paymentBtn = document.getElementById('l-entry-payment'); if(paymentBtn && !paymentBtn.disabled) paymentBtn.addEventListener('click', ()=>{ modalState.draft.entryType='payment'; render(); });
+      const saveEntryBtn = document.getElementById('modalSaveLoanEntry'); if(saveEntryBtn) saveEntryBtn.addEventListener('click', saveLoanEntry);
       const delBtn = document.getElementById('modalDeleteLoan'); if(delBtn) delBtn.addEventListener('click', ()=>{
         const loan = loans.find(l=>l.id===modalState.loanId);
         openDeleteReasonModal('loan', modalState.loanId, loan ? loan.customerName : '');
