@@ -281,6 +281,10 @@
   .loan-summary .grand{font-weight:800; color:var(--ink); font-size:15px; border-top:1px solid var(--line); margin-top:4px; padding-top:6px;}
   .loan-subhead{font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:var(--slate); margin:14px 0 6px; font-weight:700;}
   .loan-pay-row{display:flex; justify-content:space-between; align-items:center; gap:8px; padding:7px 0; border-bottom:1px solid var(--paper-2); font-size:12.5px;}
+  .entry-actions{display:flex; gap:4px; flex-shrink:0;}
+  .entry-act{background:none; border:1px solid var(--line); color:var(--slate-dim); width:24px; height:24px; border-radius:6px; font-size:12px; line-height:1; cursor:pointer; transition:border-color .15s ease, color .15s ease;}
+  .entry-act:hover{border-color:var(--accent); color:var(--accent);}
+  .entry-act.danger:hover{border-color:var(--danger); color:var(--danger);}
   .loan-pay-row:last-child{border-bottom:none;}
   .confirm-modal{width:320px;}
   .confirm-msg{font-size:14.5px; color:var(--ink); line-height:1.5; margin:4px 0 0;}
@@ -455,6 +459,8 @@ const T = {
     loans:'Loans', loan:'Loan', add_loan:'+ Add Loan', loan_manage:'Manage',
     loan_original:'Amount Owed', loan_paid:'Paid', loan_remaining:'Remaining',
     loan_status_outstanding:'Outstanding', loan_status_partial:'Partial', loan_status_paid:'Paid Off',
+    loan_status_overpaid:'Overpaid', loan_you_owe_them:'You Owe Them',
+    toast_payment_overpaid:'Recorded {n} — this pays it off and now you owe them {owe}',
     loan_total_owed:'Total Owed to You', loan_people_count:'People with Loans',
     no_loans_yet:'No loans recorded yet.', no_payments_yet:'No payments recorded yet.',
     loan_note:'Note (optional)', loan_note_placeholder:'Reason for loan, or any note',
@@ -463,6 +469,8 @@ const T = {
     loan_entry_add_more:'Add More Loan', loan_entry_record_payment:'Record Payment',
     loan_entry_fully_paid_note:'This loan is fully paid — you can only add more loan.',
     toast_loan_charge_added:'Added {n} to the loan',
+    confirm_delete_entry:'Delete this entry? This will update the loan balance.',
+    toast_entry_updated:'Entry updated', toast_entry_deleted:'Entry deleted',
     loan_id:'Loan ID', loan_charge_history:'Charge History', loan_search_placeholder:'Search by name or loan ID…',
     godaam_label:'Warehouse', godaam_back:'← Back to Inventory', add_godaam_item:'+ Add Item',
     godaam_total_value:'Total Warehouse Value', godaam_item_count:'Items in Warehouse',
@@ -574,6 +582,8 @@ const T = {
     loans:'پورونه', loan:'پور', add_loan:'+ پور اضافه کړئ', loan_manage:'اداره',
     loan_original:'پور شوی مقدار', loan_paid:'تادیه شوی', loan_remaining:'پاتې',
     loan_status_outstanding:'ناتادیه شوی', loan_status_partial:'نیمګړی', loan_status_paid:'بشپړ تادیه شوی',
+    loan_status_overpaid:'زیاته تادیه شوې', loan_you_owe_them:'تاسو ورته پور لرئ',
+    toast_payment_overpaid:'{n} ثبت شو — دا یې بشپړوي او اوس تاسو ورته {owe} پور لرئ',
     loan_total_owed:'ټول پور چې تاسو ته ورکول کیږي', loan_people_count:'پور لرونکي کسان',
     loan_type_label:'ډول', loan_type_borrower:'زما پور لري', loan_type_giver:'زه يې پور لرم',
     loan_total_owed_by_shop:'هغه پور چې تاسو یې ورکوئ', top_loan_givers:'مهم پور ورکوونکي', no_loan_givers_yet:'تر اوسه هیڅ پور ورکوونکی نشته.',
@@ -585,6 +595,8 @@ const T = {
     loan_entry_add_more:'نور پور زیات کړئ', loan_entry_record_payment:'تادیه ثبت کړئ',
     loan_entry_fully_paid_note:'دا پور بشپړ تادیه شوی — تاسو یوازې کولی شئ نور پور زیات کړئ.',
     toast_loan_charge_added:'{n} پور ته زیات شو',
+    confirm_delete_entry:'دا ننوت ړنګ کړئ؟ دا به د پور بیلانس تازه کړي.',
+    toast_entry_updated:'ننوت تازه شو', toast_entry_deleted:'ننوت ړنګ شو',
     loan_id:'د پور آی ډي', loan_charge_history:'د پور اخیستلو تاریخچه', loan_search_placeholder:'د نوم یا پور آی ډي له مخې ولټوئ...',
     godaam_label:'ګدام', godaam_back:'← بیرته زیرمې ته', add_godaam_item:'+ توکی اضافه کړئ',
     godaam_total_value:'د ګدام ټول ارزښت', godaam_item_count:'په ګدام کې توکي',
@@ -677,6 +689,8 @@ const T = {
     loans:'قرضه‌ها', loan:'قرضه', add_loan:'+ افزودن قرضه', loan_manage:'مدیریت',
     loan_original:'مبلغ قرضه', loan_paid:'پرداخت شده', loan_remaining:'باقی‌مانده',
     loan_status_outstanding:'پرداخت‌نشده', loan_status_partial:'جزئی', loan_status_paid:'تصفیه‌شده',
+    loan_status_overpaid:'اضافه پرداخت شده', loan_you_owe_them:'شما به او قرضه دارید',
+    toast_payment_overpaid:'{n} ثبت شد — این آن را تصفیه می‌کند و اکنون شما {owe} به او قرضه دارید',
     loan_total_owed:'مجموع طلب شما', loan_people_count:'افراد دارای قرضه',
     loan_type_label:'نوعیت', loan_type_borrower:'از من قرضه دارد', loan_type_giver:'به او قرضه دارم',
     loan_total_owed_by_shop:'قرضه‌ای که شما می‌دهید', top_loan_givers:'قرضه‌دهندگان برتر', no_loan_givers_yet:'هنوز قرضه‌دهنده‌ای ثبت نشده.',
@@ -688,6 +702,8 @@ const T = {
     loan_entry_add_more:'افزودن قرضه بیشتر', loan_entry_record_payment:'ثبت پرداخت',
     loan_entry_fully_paid_note:'این قرضه به طور کامل پرداخت شده — فقط می‌توانید قرضه بیشتر اضافه کنید.',
     toast_loan_charge_added:'{n} به قرضه اضافه شد',
+    confirm_delete_entry:'این ثبت حذف شود؟ این کار مانده قرضه را به‌روز می‌کند.',
+    toast_entry_updated:'ثبت به‌روزرسانی شد', toast_entry_deleted:'ثبت حذف شد',
     loan_id:'شناسه قرضه', loan_charge_history:'تاریخچه قرضه‌گیری', loan_search_placeholder:'جستجو با نام یا شناسه قرضه...',
     godaam_label:'گدام', godaam_back:'← بازگشت به انبار', add_godaam_item:'+ افزودن جنس',
     godaam_total_value:'ارزش کل گدام', godaam_item_count:'اجناس در گدام',
@@ -1027,10 +1043,20 @@ async function saveLoans(){
     const {data:existing} = await sb.from('loans').select('id');
     const toDelete = (existing||[]).map(r=>r.id).filter(id=>!ids.includes(id));
     if(toDelete.length) await sb.from('loans').delete().in('id', toDelete); // cascades to charges/payments
+
     const allCharges = loans.flatMap(l=>l.charges.map(c=>({id:c.id, loan_id:l.id, amount:c.amount, note:c.note, date:c.date, sale_id:c.saleId, staff_id:c.staffId, staff_name:c.staffName})));
     if(allCharges.length) await sb.from('loan_charges').upsert(allCharges);
+    const chargeIds = allCharges.map(c=>c.id);
+    const {data:existingCharges} = await sb.from('loan_charges').select('id').in('loan_id', ids.length?ids:['00000000-0000-0000-0000-000000000000']);
+    const chargesToDelete = (existingCharges||[]).map(r=>r.id).filter(id=>!chargeIds.includes(id));
+    if(chargesToDelete.length) await sb.from('loan_charges').delete().in('id', chargesToDelete);
+
     const allPayments = loans.flatMap(l=>l.payments.map(p=>({id:p.id, loan_id:l.id, amount:p.amount, date:p.date, staff_id:p.staffId, staff_name:p.staffName})));
     if(allPayments.length) await sb.from('loan_payments').upsert(allPayments);
+    const paymentIds = allPayments.map(p=>p.id);
+    const {data:existingPayments} = await sb.from('loan_payments').select('id').in('loan_id', ids.length?ids:['00000000-0000-0000-0000-000000000000']);
+    const paymentsToDelete = (existingPayments||[]).map(r=>r.id).filter(id=>!paymentIds.includes(id));
+    if(paymentsToDelete.length) await sb.from('loan_payments').delete().in('id', paymentsToDelete);
   }catch(e){ showToast('Could not save loans'); }
 }
 async function saveLoanDeleteLog(){
@@ -1526,20 +1552,72 @@ async function saveLoanEntry(){
     await saveLoans();
     showToast(t('toast_loan_charge_added', {n:loanMoney(amount, loan)}));
   } else {
-    const remaining = loanRemaining(loan);
-    const applied = Math.min(amount, remaining);
     loan.payments = loan.payments || [];
     loan.payments.push({
-      id:uid(), amount:applied, date:d.date||new Date().toISOString().slice(0,10),
+      id:uid(), amount, date:d.date||new Date().toISOString().slice(0,10),
       note:(d.note||'').trim(), staffId:currentUser.id, staffName:currentUser.name
     });
     await saveLoans();
-    showToast(t('toast_payment_recorded', {n:loanMoney(applied, loan)}));
+    const newRemaining = loanRemaining(loan);
+    if(newRemaining < -0.004){
+      showToast(t('toast_payment_overpaid', {n:loanMoney(amount, loan), owe:loanMoney(Math.abs(newRemaining), loan)}));
+    } else {
+      showToast(t('toast_payment_recorded', {n:loanMoney(amount, loan)}));
+    }
   }
   const newRemaining = loanRemaining(loan);
   modalState = {mode:'loanDetail', loanId:loan.id, draft:{amount:'', date:new Date().toISOString().slice(0,10), note:'', entryType: newRemaining>0 ? 'payment' : 'charge'}};
   render();
   } finally { isSubmitting = false; hideLoadingOverlay(); }
+}
+function openEditLoanEntryModal(loanId, entryType, entryId){
+  const loan = loans.find(l=>l.id===loanId);
+  if(!loan) return;
+  const list = entryType==='charge' ? (loan.charges||[]) : (loan.payments||[]);
+  const entry = list.find(e=>e.id===entryId);
+  if(!entry) return;
+  modalState = {
+    mode:'editLoanEntry', loanId, entryType, entryId,
+    draft:{amount:String(entry.amount), date:(entry.date||'').slice(0,10), note:entry.note||''}
+  };
+  render();
+}
+async function saveEditLoanEntry(){
+  if(isSubmitting) return; isSubmitting = true; showLoadingOverlay();
+  try{
+  const { loanId, entryType, entryId, draft:d } = modalState;
+  const loan = loans.find(l=>l.id===loanId);
+  if(!loan) return;
+  const amount = parseFloat(d.amount);
+  if(isNaN(amount) || amount<=0){ showToast(t('toast_loan_invalid_amount')); return; }
+  const list = entryType==='charge' ? (loan.charges = loan.charges||[]) : (loan.payments = loan.payments||[]);
+  const entry = list.find(e=>e.id===entryId);
+  if(!entry){ showToast(t('print_unavailable')); return; }
+  entry.amount = amount;
+  entry.date = d.date ? new Date(d.date).toISOString() : entry.date;
+  entry.note = (d.note||'').trim();
+  await saveLoans();
+  showToast(t('toast_entry_updated'));
+  const newRemaining = loanRemaining(loan);
+  modalState = {mode:'loanDetail', loanId, draft:{amount:'', date:new Date().toISOString().slice(0,10), note:'', entryType: newRemaining>0 ? 'payment' : 'charge'}};
+  render();
+  } finally { isSubmitting = false; hideLoadingOverlay(); }
+}
+function deleteLoanEntry(loanId, entryType, entryId){
+  const loan = loans.find(l=>l.id===loanId);
+  if(!loan) return;
+  askConfirm(t('confirm_delete_entry'), async ()=>{
+    if(isSubmitting) return; isSubmitting = true; showLoadingOverlay();
+    try{
+      if(entryType==='charge') loan.charges = (loan.charges||[]).filter(e=>e.id!==entryId);
+      else loan.payments = (loan.payments||[]).filter(e=>e.id!==entryId);
+      await saveLoans();
+      showToast(t('toast_entry_deleted'));
+      const newRemaining = loanRemaining(loan);
+      modalState = {mode:'loanDetail', loanId, draft:{amount:'', date:new Date().toISOString().slice(0,10), note:'', entryType: newRemaining>0 ? 'payment' : 'charge'}};
+      render();
+    } finally { isSubmitting = false; hideLoadingOverlay(); }
+  });
 }
 async function deleteLoan(id, reason){
   if(isSubmitting) return; isSubmitting = true; showLoadingOverlay();
@@ -1647,14 +1725,15 @@ function showToast(msg){
 // ---------------- LOANS ----------------
 function loanChargedTotal(loan){ return (loan.charges||[]).reduce((a,c)=>a+c.amount,0); }
 function loanPaidTotal(loan){ return (loan.payments||[]).reduce((a,p)=>a+p.amount,0); }
-function loanRemaining(loan){ return Math.max(0, loanChargedTotal(loan) - loanPaidTotal(loan)); }
+function loanRemaining(loan){ return loanChargedTotal(loan) - loanPaidTotal(loan); }
 function loanStatus(loan){
   const remaining = loanRemaining(loan);
+  if(remaining < -0.004) return 'overpaid';
   if(remaining<=0.004) return 'paid';
   if(loanPaidTotal(loan)>0) return 'partial';
   return 'outstanding';
 }
-function loanStatusClass(status){ return status==='paid' ? 'ok' : status==='partial' ? 'low' : 'out'; }
+function loanStatusClass(status){ return status==='paid' ? 'ok' : status==='overpaid' ? 'low' : status==='partial' ? 'low' : 'out'; }
 function loanLastPayment(loan){
   const payments = loan.payments || [];
   if(!payments.length) return null;
@@ -2400,7 +2479,7 @@ function buildLoanCells(type){
       <div class="ig-cell">${escapeHtml(l.customerName)}</div>
       <div class="ig-cell mono">${loanMoney(loanChargedTotal(l), l)}</div>
       <div class="ig-cell mono">${loanMoney(paid, l)}</div>
-      <div class="ig-cell mono">${loanMoney(remaining, l)}</div>
+      <div class="ig-cell mono" style="${remaining<0?'color:var(--amber);':''}">${remaining<0?'−':''}${loanMoney(Math.abs(remaining), l)}</div>
       <div class="ig-cell"><span class="stockpill ${loanStatusClass(status)}">${t('loan_status_'+status)}</span></div>
       <div class="ig-cell mono">${daysLabel}</div>
       <div class="ig-cell mono">${lastAmtLabel}</div>
@@ -2416,7 +2495,7 @@ function updateLoanTable(){
 }
 function sumByCurrency(loanList){
   const totals = {AFN:0, USD:0};
-  loanList.forEach(l=>{ totals[l.currency==='USD'?'USD':'AFN'] += loanRemaining(l); });
+  loanList.forEach(l=>{ totals[l.currency==='USD'?'USD':'AFN'] += Math.max(0, loanRemaining(l)); });
   return totals;
 }
 function formatCurrencyTotals(totals){
@@ -2659,11 +2738,14 @@ function tryPrintPeriodReport(){
 
 // ---------------- LOAN LIST PRINT / DOWNLOAD ----------------
 function buildLoanListHtml(){
-  const rows = loans.map(l=>`<tr>
+  const rows = loans.map(l=>{
+    const rem = loanRemaining(l);
+    return `<tr>
     <td>${formatLoanCode(l.loanSeq||0)}</td><td>${escapeHtml(l.customerName)}</td>
     <td style="text-align:right;">${loanMoney(loanChargedTotal(l), l)}</td><td style="text-align:right;">${loanMoney(loanPaidTotal(l), l)}</td>
-    <td style="text-align:right;">${loanMoney(loanRemaining(l), l)}</td><td>${t('loan_status_'+loanStatus(l))}</td>
-  </tr>`).join('');
+    <td style="text-align:right;">${rem<0?'−':''}${loanMoney(Math.abs(rem), l)}</td><td>${t('loan_status_'+loanStatus(l))}</td>
+  </tr>`;
+  }).join('');
   const totalOwed = formatCurrencyTotals(sumByCurrency(loans));
   return `<!DOCTYPE html><html lang="${settings.lang}" dir="${RTL_LANGS.includes(settings.lang)?'rtl':'ltr'}"><head><meta charset="UTF-8">
   <title>${t('brand')} — ${t('loans')}</title>
@@ -2733,6 +2815,7 @@ function tryPrintGodaamList(){
 function buildLoanDetailHtml(loan){
   const chargeRows = (loan.charges||[]).map(c=>`<tr><td>${new Date(c.date).toLocaleDateString()}</td><td style="text-align:right;">${loanMoney(c.amount, loan)}</td><td>${escapeHtml(c.note||'')}</td></tr>`).join('');
   const payRows = (loan.payments||[]).map(p=>`<tr><td>${new Date(p.date).toLocaleDateString()}</td><td style="text-align:right;">${loanMoney(p.amount, loan)}</td><td>${escapeHtml(p.note||'')}</td></tr>`).join('');
+  const remaining = loanRemaining(loan);
   return `<!DOCTYPE html><html lang="${settings.lang}" dir="${RTL_LANGS.includes(settings.lang)?'rtl':'ltr'}"><head><meta charset="UTF-8">
   <title>${t('brand')} — ${escapeHtml(loan.customerName)}</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -2753,7 +2836,7 @@ function buildLoanDetailHtml(loan){
     <div class="totals" style="margin-top:12px;">
       <div><span>${t('loan_original')}</span><span>${loanMoney(loanChargedTotal(loan), loan)}</span></div>
       <div><span>${t('loan_paid')}</span><span>${loanMoney(loanPaidTotal(loan), loan)}</span></div>
-      <div class="grand"><span>${t('loan_remaining')}</span><span>${loanMoney(loanRemaining(loan), loan)}</span></div>
+      <div class="grand"><span>${remaining<0?t('loan_you_owe_them'):t('loan_remaining')}</span><span>${loanMoney(Math.abs(remaining), loan)}</span></div>
     </div>
     <h4>${t('loan_charge_history')}</h4>
     <table><thead><tr><th>${t('when')}</th><th>${t('loan_original')}</th><th>${t('loan_note')}</th></tr></thead><tbody>${chargeRows||`<tr><td colspan="3">${t('no_loans_yet')}</td></tr>`}</tbody></table>
@@ -2942,12 +3025,20 @@ function renderModal(){
         <span class="mono">${new Date(c.date).toLocaleDateString()}</span>
         <span class="mono" style="color:var(--danger);font-weight:700;">${loanMoney(c.amount, loan)}</span>
         <span style="color:var(--slate);font-size:11.5px;">${escapeHtml(c.staffName||'')}${c.note?' · '+escapeHtml(c.note):''}</span>
+        <span class="entry-actions">
+          <button class="entry-act" data-editentry="charge:${c.id}" title="${t('edit')}">✎</button>
+          <button class="entry-act danger" data-delentry="charge:${c.id}" title="${t('delete')}">✕</button>
+        </span>
       </div>`).join('') || `<div class="empty-note" style="padding:10px 0;">${t('no_loans_yet')}</div>`;
     const payRows = (loan.payments||[]).slice().reverse().map(p=>`
       <div class="loan-pay-row">
         <span class="mono">${new Date(p.date).toLocaleDateString()}</span>
         <span class="mono" style="color:var(--green);font-weight:700;">${loanMoney(p.amount, loan)}</span>
         <span style="color:var(--slate);font-size:11.5px;">${escapeHtml(p.staffName||'')}${p.note?' · '+escapeHtml(p.note):''}</span>
+        <span class="entry-actions">
+          <button class="entry-act" data-editentry="payment:${p.id}" title="${t('edit')}">✎</button>
+          <button class="entry-act danger" data-delentry="payment:${p.id}" title="${t('delete')}">✕</button>
+        </span>
       </div>`).join('') || `<div class="empty-note" style="padding:10px 0;">${t('no_payments_yet')}</div>`;
     return `
     <div class="modal-bg" id="modalBg">
@@ -2957,7 +3048,7 @@ function renderModal(){
         <div class="loan-summary">
           <div><span>${t('loan_original')}</span><span class="mono">${loanMoney(loanChargedTotal(loan), loan)}</span></div>
           <div><span>${t('loan_paid')}</span><span class="mono" style="color:var(--green);">${loanMoney(paid, loan)}</span></div>
-          <div class="grand"><span>${t('loan_remaining')}</span><span class="mono">${loanMoney(remaining, loan)}</span></div>
+          <div class="grand"><span>${remaining<0?t('loan_you_owe_them'):t('loan_remaining')}</span><span class="mono" style="${remaining<0?'color:var(--amber);':''}">${loanMoney(Math.abs(remaining), loan)}</span></div>
         </div>
         <span class="stockpill ${loanStatusClass(status)}" style="margin-bottom:14px;display:inline-block;">${t('loan_status_'+status)}</span>
         <div class="modal-actions" style="margin-top:0;margin-bottom:14px;">
@@ -2976,7 +3067,7 @@ function renderModal(){
           ${remaining<=0?`<div class="empty-note">${t('loan_entry_fully_paid_note')}</div>`:''}
         </div>
         <div class="field-row">
-          <div class="field"><label>${d.entryType==='charge'?t('loan_original'):t('loan_payment_amount')}</label><input type="number" step="0.01" min="0" ${d.entryType!=='charge'?`max="${remaining}"`:''} id="lp-amount" value="${escapeAttr(d.amount)}" placeholder="0.00"></div>
+          <div class="field"><label>${d.entryType==='charge'?t('loan_original'):t('loan_payment_amount')}</label><input type="number" step="0.01" min="0" id="lp-amount" value="${escapeAttr(d.amount)}" placeholder="0.00"></div>
           <div class="field"><label>${t('loan_payment_date')}</label><input type="date" id="lp-date" value="${escapeAttr(d.date)}"></div>
         </div>
         <div class="field"><label>${t('loan_note')}</label><input type="text" id="lp-note" value="${escapeAttr(d.note)}" placeholder="${t('loan_note_placeholder')}"></div>
@@ -2984,6 +3075,26 @@ function renderModal(){
           <button class="cancel" id="modalCancel">${t('close')}</button>
           <button class="cancel danger" id="modalDeleteLoan">${t('delete')}</button>
           <button class="save" id="modalSaveLoanEntry">${d.entryType==='charge'?t('loan_entry_add_more'):t('loan_entry_record_payment')}</button>
+        </div>
+      </div>
+    </div>`;
+  }
+  if(modalState.mode==='editLoanEntry'){
+    const loan = loans.find(l=>l.id===modalState.loanId);
+    if(!loan) return '';
+    const isCharge = modalState.entryType==='charge';
+    return `
+    <div class="modal-bg" id="modalBg">
+      <div class="modal">
+        <h3>${isCharge?t('loan_entry_add_more'):t('loan_entry_record_payment')}</h3>
+        <div class="field-row">
+          <div class="field"><label>${isCharge?t('loan_original'):t('loan_payment_amount')}</label><input type="number" step="0.01" min="0" id="le-amount" value="${escapeAttr(d.amount)}" placeholder="0.00" autofocus></div>
+          <div class="field"><label>${t('loan_payment_date')}</label><input type="date" id="le-date" value="${escapeAttr(d.date)}"></div>
+        </div>
+        <div class="field"><label>${t('loan_note')}</label><input type="text" id="le-note" value="${escapeAttr(d.note)}" placeholder="${t('loan_note_placeholder')}"></div>
+        <div class="modal-actions">
+          <button class="cancel" id="modalCancelEditEntry">${t('cancel')}</button>
+          <button class="save" id="modalSaveEditEntry">${t('save_changes')}</button>
         </div>
       </div>
     </div>`;
@@ -3341,6 +3452,22 @@ function render(){
         openDeleteReasonModal('loan', modalState.loanId, loan ? loan.customerName : '');
       });
       const printLoanDetailBtn = document.getElementById('printLoanDetailBtn'); if(printLoanDetailBtn) printLoanDetailBtn.addEventListener('click', ()=>tryPrintLoanDetail(modalState.loanId));
+      document.querySelectorAll('[data-editentry]').forEach(b=>b.addEventListener('click', ()=>{
+        const [type, id] = b.dataset.editentry.split(':');
+        openEditLoanEntryModal(modalState.loanId, type, id);
+      }));
+      document.querySelectorAll('[data-delentry]').forEach(b=>b.addEventListener('click', ()=>{
+        const [type, id] = b.dataset.delentry.split(':');
+        deleteLoanEntry(modalState.loanId, type, id);
+      }));
+    } else if(modalState.mode==='editLoanEntry'){
+      const bind = (id,key)=>{ const el = document.getElementById(id); if(el) el.addEventListener('input', e=>{ modalState.draft[key]=e.target.value; }); };
+      bind('le-amount','amount'); bind('le-date','date'); bind('le-note','note');
+      document.getElementById('modalCancelEditEntry').addEventListener('click', ()=>{
+        modalState = {mode:'loanDetail', loanId:modalState.loanId, draft:{amount:'', date:new Date().toISOString().slice(0,10), note:'', entryType:'payment'}};
+        render();
+      });
+      document.getElementById('modalSaveEditEntry').addEventListener('click', saveEditLoanEntry);
     } else if(modalState.mode==='addGodaam'){
       const bind = (id,key)=>{ const el = document.getElementById(id); if(el) el.addEventListener('input', e=>{ modalState.draft[key]=e.target.value; }); };
       bind('g-name','name'); bind('g-bags','bagsCount'); bind('g-dpb','dozensPerBag'); bind('g-extra','extraDozens'); bind('g-cost','costPerDozen');
